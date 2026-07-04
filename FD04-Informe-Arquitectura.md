@@ -54,6 +54,8 @@ Versión *2.0*
 
 &nbsp;&nbsp;[2.3 Diagrama de Componentes (Nivel 3)](#23-diagrama-de-componentes-nivel-3)
 
+&nbsp;&nbsp;[2.4 Diagrama de Clases (Nivel Lógico)](#24-diagrama-de-clases-nivel-lógico)
+
 [3. Vista de Procesos](#3-vista-de-procesos)
 
 &nbsp;&nbsp;[3.1 Secuencia de Arranque](#31-secuencia-de-arranque)
@@ -188,6 +190,72 @@ graph TB
     scan --> threatmodal
 
     preload -.->|contextBridge| app
+```
+
+### 2.4 Diagrama de Clases (Nivel Lógico)
+
+Aunque la aplicación está desarrollada en JavaScript (utilizando módulos de Node.js y componentes funcionales de React), el siguiente diagrama modela las entidades lógicas como **clases o servicios** para representar sus responsabilidades y relaciones en el Backend (Proceso Main).
+
+```mermaid
+classDiagram
+    class ClamAVService {
+        +quickScan() Promise
+        +fullScan() Promise
+        +customScan(paths: string[]) Promise
+        +stopScan() void
+        -generateScanList(targets) void
+    }
+
+    class DatabaseService {
+        +insertScanStart(type: string, logFile: string) int
+        +updateScanFinish(id: int, files: int, threats: int, status: string) void
+        +getHistory() array
+        +addToQuarantine(originalPath: string, quarPath: string, threat: string) void
+        +getQuarantine() array
+    }
+
+    class QuarantineManager {
+        +quarantineFile(filePath: string, threatName: string) Promise
+        +restoreFile(id: int) Promise
+        +deleteFile(id: int) Promise
+    }
+
+    class HoneypotManager {
+        +startAntiRansomware() void
+        +stopAntiRansomware() void
+        -deployCanaries() void
+        -handleDetection(path: string) void
+    }
+
+    class WatcherService {
+        +startRealTime() void
+        +stopRealTime() void
+        -processQueue() void
+    }
+
+    class Logger {
+        +initSession(prefix: string) string
+        +log(level: string, message: string) void
+    }
+
+    class ClamdDaemon {
+        +startDaemon() Promise
+        +stopDaemon() void
+        +checkStatus() boolean
+    }
+
+    %% Relaciones
+    ClamAVService --> DatabaseService : registra scans
+    ClamAVService --> Logger : escribe logs
+    WatcherService --> ClamAVService : solicita escaneos
+    QuarantineManager --> DatabaseService : guarda metadatos
+    QuarantineManager --> Logger : escribe eventos
+    HoneypotManager --> Logger : alerta crítica
+    main_js ..> ClamAVService : invoca
+    main_js ..> QuarantineManager : invoca
+    main_js ..> WatcherService : invoca
+    main_js ..> HoneypotManager : invoca
+    main_js ..> ClamdDaemon : orquesta
 ```
 
 ---
