@@ -1,0 +1,48 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# RustGuard - Data directories (generated at runtime)
+db/
+quarantine/
+clamav_db/
+
+# Build output
+release/
+
+# Coverage and Reports
+coverage/
+playwright-report/
+test-results/
+reports/
+.features-gen/
+
+# Stryker
+.stryker-tmp/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
