@@ -14,64 +14,61 @@ jobs:
       pull-requests: write
 
     steps:
-    - name: 📥 Checkout del Código
-      uses: actions/checkout@v3
+    - name: Checkout del Codigo
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
-    - name: 🐍 Configurar Python
-      uses: actions/setup-python@v4
+    - name: Configurar Python
+      uses: actions/setup-python@v5
       with:
         python-version: '3.10'
         cache: 'pip'
 
-    - name: 📦 Instalar Dependencias
+    - name: Instalar Dependencias
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: 🧪 Ejecutar Pruebas Unitarias y Cobertura (PyTest)
+    - name: Ejecutar Pruebas Unitarias y Cobertura (PyTest)
       run: pytest
       continue-on-error: true
 
-    - name: 🧟 Ejecutar Pruebas de Mutación (Mutmut)
+    - name: Ejecutar Pruebas de Mutacion (Mutmut)
       run: mutmut run || mutmut html
       continue-on-error: true
 
-    - name: 🥒 Ejecutar Pruebas BDD (Behave)
+    - name: Ejecutar Pruebas BDD (Behave)
       run: behave tests/features --format html --outfile reports/cucumber-report.html
       continue-on-error: true
 
-    - name: 🔍 Análisis Estático: Semgrep
+    - name: Analisis Estatico Semgrep
       uses: returntocorp/semgrep-action@v1
       with:
         config: "p/default"
         generateSarif: "1"
       continue-on-error: true
 
-    - name: ☁️ Análisis Estático: SonarCloud
+    - name: Analisis Estatico SonarCloud
       uses: SonarSource/sonarcloud-github-action@master
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       continue-on-error: true
 
-    - name: 📂 Preparar Artefactos Web (GH-Pages)
+    - name: Preparar Artefactos Web (GH-Pages)
       run: |
         mkdir -p public_html/coverage
         mkdir -p public_html/stryker
         mkdir -p public_html/cucumber
         
-        # Pytest-cov report
         cp -r htmlcov/* public_html/coverage/ || true
-        # Mutmut report
         cp -r html/* public_html/stryker/ || true
-        # Behave report
         cp reports/cucumber-report.html public_html/cucumber/ || true
         
         echo "<h1>RustGuard Action Dashboard</h1><ul><li><a href='coverage/index.html'>Coverage (Pytest)</a></li><li><a href='stryker/index.html'>Mutation Testing (Mutmut)</a></li><li><a href='cucumber/cucumber-report.html'>BDD Report (Behave)</a></li></ul>" > public_html/index.html
 
-    - name: 🚀 Desplegar Reportes a GitHub Pages
+    - name: Desplegar Reportes a GitHub Pages
       if: github.ref == 'refs/heads/codigo-action'
       uses: peaceiris/actions-gh-pages@v3
       with:
