@@ -68,7 +68,7 @@ describe('History', () => {
     }
     render(<History />)
     expect(await screen.findByText('Rápido')).toBeInTheDocument()
-    expect(screen.getByText('1234')).toBeInTheDocument()
+    expect(screen.getByText('1,234')).toBeInTheDocument()
   })
 
   it('shows correct status badges', async () => {

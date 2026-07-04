@@ -14,7 +14,8 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: [
     ['html', { outputFolder: 'playwright-report' }],
-    ['list']
+    ['list'],
+    ['junit', { outputFile: 'playwright-report/results.xml' }]
   ],
   use: {
     trace: 'on-first-retry',
