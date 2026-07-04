@@ -1,0 +1,15 @@
+name: 'DevSecOps Antivirus'
+description: 'Escanea el repositorio en busca de malware y firmas maliciosas, deteniendo el pipeline si se detectan amenazas.'
+author: 'DevSecOps Team'
+
+inputs:
+  scan-path:
+    description: 'Ruta relativa al directorio a escanear (por defecto: todo el repositorio)'
+    required: false
+    default: '.'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.scan-path }}

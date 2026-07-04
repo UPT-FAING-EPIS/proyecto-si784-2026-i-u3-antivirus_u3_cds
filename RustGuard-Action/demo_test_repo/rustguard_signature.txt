@@ -1,0 +1,3 @@
+Este archivo contiene la firma de prueba personalizada:
+RUSTGUARD-TEST-SIGNATURE-12345
+Debería ser detectado como amenaza.

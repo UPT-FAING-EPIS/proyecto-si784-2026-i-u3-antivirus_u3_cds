@@ -1,0 +1,16 @@
+# Node
+node_modules/
+npm-debug.log*
+
+# Entorno
+.env
+.DS_Store
+
+# Pruebas y CI
+coverage/
+reports/
+public_html/
+.stryker-tmp/
+
+# Python cache (si existiera)
+__pycache__/

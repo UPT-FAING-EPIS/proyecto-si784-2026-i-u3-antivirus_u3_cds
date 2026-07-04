@@ -1,0 +1,23 @@
+# Dependencias de Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Compilados de TypeScript y binarios
+out/
+dist/
+build/
+*.vsix
+
+# Reportes de Testing y CI/CD
+coverage/
+reports/
+public_html/
+.stryker-tmp/
+
+# Entorno local y SO
+.env
+.DS_Store
+Thumbs.db
+.vscode-test/

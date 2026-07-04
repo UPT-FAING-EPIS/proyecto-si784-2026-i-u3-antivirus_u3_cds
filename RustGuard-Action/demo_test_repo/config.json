@@ -1,0 +1,13 @@
+{
+    "app_name": "MiAplicacion",
+    "version": "1.0.0",
+    "database": {
+        "host": "localhost",
+        "port": 5432,
+        "name": "mi_base_de_datos"
+    },
+    "features": {
+        "dark_mode": true,
+        "notifications": true
+    }
+}

@@ -1,0 +1,1 @@
+Hola, este archivo es inofensivo y no contiene ninguna firma maliciosa. El pipeline debería pasar correctamente.

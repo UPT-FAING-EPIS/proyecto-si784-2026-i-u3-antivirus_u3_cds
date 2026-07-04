@@ -2,101 +2,103 @@
   <img src="https://img.shields.io/badge/RustGuard-Ecosystem-blue?style=for-the-badge" alt="RustGuard Logo">
   <h1>🛡️ RustGuard Antivirus Suite</h1>
   <p>
-    <strong>El Ecosistema Omnicanal de Seguridad Proactiva y Análisis de Malware (Zero-Trace)</strong>
+    <strong>El Ecosistema Omnicanal de Seguridad Proactiva y Análisis de Malware (Zero-Trace) bajo principios de Clean Architecture.</strong>
   </p>
   
-  [![Quality & Testing](https://img.shields.io/badge/Course-Quality_%26_Testing-blue.svg)](#)
-  [![Universidad Privada de Tacna](https://img.shields.io/badge/UPT-Ing._Sistemas-red.svg)](#)
-  [![DevSecOps](https://img.shields.io/badge/Category-DevSecOps-brightgreen.svg)](#)
+  ![Versión](https://img.shields.io/badge/version-v1.0%20Estable-brightgreen)
+  ![TypeScript](https://img.shields.io/badge/TypeScript-VS%20Code-3178C6?logo=typescript&logoColor=white)
+  ![Python](https://img.shields.io/badge/Python-Action-3776AB?logo=python&logoColor=white)
+  ![Node.js](https://img.shields.io/badge/Node.js-Bot-339933?logo=node.js&logoColor=white)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-  <p>
-    <a href="#-acerca-de-la-suite">Acerca de la Suite</a> •
-    <a href="#-arquitectura-del-ecosistema">Arquitectura</a> •
-    <a href="#-sub-proyectos-integrados">Proyectos Integrados</a> •
-    <a href="#-documentación-oficial-informes">Documentación Formal</a> •
-    <a href="#-autores">Autores</a>
-  </p>
 </div>
 
----
+[IMAGEN: Banner o diagrama general arquitectónico del ecosistema RustGuard]
 
-## 📖 Acerca de la Suite
-
-**RustGuard Antivirus** no es un antivirus tradicional de escritorio; es un **ecosistema de seguridad distribuido**. 
-
-Desarrollado como proyecto final integrador, RustGuard traslada la seguridad directamente a los entornos donde el usuario moderno opera diariamente: el repositorio de código, el editor de desarrollo, y el chat de mensajería. Su filosofía se basa en el concepto de *Shift-Left Security* (Seguridad Temprana) y un modelo *Zero-Trace* que asegura que ningún archivo sospechoso persista en la memoria de los servidores por más tiempo del necesario.
+RustGuard no es un antivirus tradicional; es una suite de seguridad distribuida diseñada para integrarse nativamente en los entornos diarios de trabajo de un desarrollador. Compuesta por tres módulos independientes, traslada la seguridad al editor de código, a los flujos de CI/CD, y a la mensajería instantánea, garantizando que el malware se intercepte mucho antes de llegar a entornos de producción.
 
 ---
 
-## 📐 Arquitectura del Ecosistema
+## ✨ Características Principales
 
-La suite está diseñada de manera modular, donde cada cliente opera independientemente utilizando motores híbridos de seguridad (Heurística, Hashes SHA-256, Inspección de Cabeceras PE, e integración con ClamAV).
-
-```mermaid
-flowchart TD
-    subgraph RustGuard Ecosystem
-        A[<b>GitHub Action</b><br/>DevSecOps Pipeline] -->|Fuga de Secretos & Ofuscación| E{Motor de Análisis (Python)}
-        B[<b>Telegram Bot</b><br/>Sandbox Messaging] -->|Aislamiento Temporal & ClamAV| F{Motor de Análisis (Node.js)}
-        C[<b>VS Code Extension</b><br/>Local IDE Scanner] -->|Regex & Binary Headers| G{Motor de Análisis (TypeScript)}
-    end
-    
-    E -->|Bloquea Pull Requests| H((Reporte de Seguridad))
-    F -->|Zero-Trace Delete| H
-    G -->|Output Channel Log| H
-```
+* **🛡️ Ecosistema Distribuido:** Protección simultánea en tres frentes: Editor Local (VS Code), Servidores (GitHub Actions) y Comunicaciones (Telegram).
+* **🔍 Análisis Heurístico Multicapa:** Utiliza expresiones regulares (RegEx), validación de cabeceras de binarios (PE headers) y firmas criptográficas (SHA-256).
+* **🧹 Filosofía Zero-Trace:** En la integración del bot, los archivos descargados son destruidos instantáneamente del disco del servidor tras su análisis, evitando la contaminación.
+* **🧠 Integración Nativa (ClamAV):** Integración profunda con el motor Open Source de ClamAV para la validación forense de archivos dudosos o encriptados.
+* **⚡ Patrón Fail-Fast:** En los flujos de Integración Continua (CI), el sistema detiene inmediatamente los pipelines si detecta inyecciones de código malicioso o credenciales expuestas (DevSecOps).
 
 ---
 
-## 🚀 Sub-Proyectos Integrados
+## 🏗️ Arquitectura del Sistema
 
-El ecosistema RustGuard está conformado por 3 componentes altamente especializados. A continuación, un resumen de cada uno:
+Todo el ecosistema RustGuard ha sido diseñado siguiendo estrictamente los principios de **Clean Architecture**, asegurando un alto nivel de testabilidad, desacoplamiento y mantenimiento profesional a nivel de ingeniería:
 
-### 1. 🐙 RustGuard DevSecOps (GitHub Action)
-- **Tecnología:** Python 3.10 (Docker Container).
-- **Propósito:** Auditoría pasiva en pipelines CI/CD.
-- **Funcionamiento:** Escanea ramas y repositorios completos durante los eventos `push` o `pull_request` en GitHub. Busca credenciales hardcodeadas (AWS, JWT, RSA Keys), detecta código ofuscado (Base64) y payloads remotos. Falla intencionalmente (`exit 1`) si se hallan vulnerabilidades, protegiendo el despliegue del proyecto.
-
-### 2. 🤖 RustGuard Sandbox (Telegram Bot)
-- **Tecnología:** Node.js (Telegraf/Node-Telegram-Bot-API) + ClamAV.
-- **Propósito:** Filtro de seguridad para usuarios de comunicación instantánea.
-- **Funcionamiento:** Escucha eventos de documentos en chats de Telegram. Descarga el archivo de forma aislada, delega el escaneo a un proceso local de *ClamAV* vía shell y responde al usuario de forma inmediata. Elimina obligatoriamente el archivo del disco inmediatamente después (Política Zero-Trace).
-
-### 3. 💻 RustGuard Local Scanner (VS Code Extension)
-- **Tecnología:** TypeScript + Node.js (VS Code API).
-- **Propósito:** Antivirus autónomo integrado en el IDE sin dependencias externas.
-- **Funcionamiento:** Inyecta comandos en el menú contextual del explorador de archivos de VS Code. Escanea archivos pesados validando firmas SHA-256 conocidas (como EICAR), inspecciona los primeros bytes buscando cabeceras ejecutables PE (`MZ`) camufladas, e implementa búsquedas Regex en archivos sospechosos.
+1. **RustGuard Local Scanner (VS Code Extension):** Escrito en *TypeScript*. Abstrae la API del editor gráfico de la lógica de evaluación de firmas estáticas.
+2. **RustGuard Sandbox (Telegram Bot):** Desarrollado en *Node.js* puro con Inyección de Dependencias, separando los Webhooks (Infraestructura) del Motor de Análisis (Casos de Uso).
+3. **RustGuard DevSecOps (GitHub Action):** Implementado en *Python 3.10*. Modula las políticas de seguridad y reglas YARA para que actúen sobre los runners de forma agnóstica.
 
 ---
 
-## 📚 Documentación Oficial (Informes)
+## 🛠️ Instalación y Despliegue Local
 
-Toda la fundamentación de ingeniería de software (requisitos, arquitectura, manuales y diccionarios) está centralizada y disponible en la carpeta de `Informes/`. Puedes consultar los documentos detallados haciendo clic en los siguientes enlaces:
+Cada módulo tiene su propio ciclo de vida e instrucciones precisas en su directorio respectivo. A continuación, se muestra el flujo general de despliegue para testear la suite completa:
 
-| ID | Documento de Ingeniería | Descripción |
-|:---:|:---|:---|
-| 📄 | [**FD01 - Informe de Factibilidad**](../Informes/FD01-Informe-Factibilidad.md) | Análisis de viabilidad técnica, operativa, y costo $0. |
-| 👁️ | [**FD02 - Visión de Producto**](../Informes/FD02-Informe-Vision.md) | Posicionamiento de mercado, perfiles de usuario y modelo de negocio de la Suite. |
-| ⚙️ | [**FD03 - Requerimientos**](../Informes/FD03-Informe-Requerimientos.md) | Especificación de Requerimientos Funcionales (RF) y No Funcionales (RNF) por subsistema. |
-| 🏛️ | [**FD04 - Arquitectura**](../Informes/FD04-Informe-Arquitectura.md) | Vistas lógicas, patrones de diseño (Event-Driven, Fail-Fast) e interacción modular. |
-| 📖 | [**FD05 - Manual de Proyecto**](../Informes/FD05-Documentacion-y-Manual.md) | **Manual de Usuario** detallado con guías de instalación y uso de la Action, el Bot y la Extensión de VS Code. |
-| 🗄️ | [**Diccionario de Datos**](../Informes/Diccionario-de-Datos.md) | Estructuras en memoria, sets de restricción y variables de entorno del sistema No-Relacional. |
-| 📏 | [**Estándar de Programación**](../Informes/Estandar-de-Programacion.md) | Normativas y guías de estilos de código aplicados a la suite (PEP-8, TS Strict, y JS Asíncrono). |
+### Requisitos Previos Generales
+* Node.js v18+ y npm/yarn.
+* Python 3.10+ y `pip`.
+* Motor ClamAV (`clamscan`) instalado y expuesto en el `PATH` de tu sistema operativo.
 
-> **Nota:** Todos los informes cuentan con control de versiones y fueron redactados bajo el formato unificado del curso.
+### Instalación por Módulo
+
+1. **Clonar el repositorio:**
+   ```bash
+   git clone [LINK_AL_REPOSITORIO]
+   cd proyecto-si784-2026-i-u3-antivirus_u3_cds
+   ```
+
+2. **Desplegar Bot de Telegram (`RustGuard-BotTelegram/`):**
+   ```bash
+   cd RustGuard-BotTelegram
+   npm install
+   # Recuerda copiar .env.example a .env e insertar tu token de Telegram
+   npm run start
+   ```
+
+3. **Compilar Extensión de VS Code (`RustGuard-VSCode/`):**
+   ```bash
+   cd RustGuard-VSCode
+   npm install
+   # Empaquetar y generar el archivo .vsix para instalar en tu IDE local
+   npm run package
+   ```
+
+4. **Probar el Action Localmente (`RustGuard-Action/`):**
+   ```bash
+   cd RustGuard-Action
+   pip install -r requirements.txt
+   # Ejecutar el scanner de prueba manual
+   python scanner.py ./demo_test_repo
+   ```
 
 ---
 
-## 👨‍💻 Autores y Créditos
+## 💻 Uso Básico
 
-Este ecosistema ha sido desarrollado como proyecto de evaluación para la Universidad Privada de Tacna.
+* **Telegram:** Abre un chat con tu bot (`@TuRustGuardBot`), sube cualquier archivo (pdf, zip, exe) y el bot lo escaneará en un entorno seguro, emitiendo un reporte al instante.
+* **VS Code:** Haz clic derecho sobre cualquier archivo sospechoso en tu explorador lateral y selecciona la opción *RustGuard: Scan File*.
+* **GitHub Actions:** Integra nuestro script `action.yml` a tu pipeline `.github/workflows/ci.yml` para bloquear automáticamente cualquier *Pull Request* que contenga payloads ofuscados o credenciales en texto plano.
 
-- **Jimmy Mijair LLica Mamani** (2023076789)
-- **Iker Alberto Sierra Ruiz** (2023077090)
+---
 
-**Curso:** Calidad y Pruebas de Software (2026)  
-**Docente:** Mag. Patrick Cuadros Quiroga  
+## 🤝 Contribución
 
-<div align="center">
-  <i>"Asegurando el código en cada etapa del desarrollo y despliegue."</i>
-</div>
+Somos una comunidad activa que fomenta las buenas prácticas. Para contribuir a cualquiera de los tres módulos de la suite:
+
+1. Haz un *Fork* del repositorio.
+2. Crea una rama para tu feature o corrección (`git checkout -b feature/MejoraHeuristica`).
+3. Sube tus cambios asegurando pasar las pruebas unitarias y de mutación (ej. Stryker) de cada sub-proyecto (`git commit -m 'feat: añade nueva regla RegEx'`).
+4. Haz *Push* y abre un *Pull Request* explicando el valor técnico para que podamos revisar el código.
+
+## 📄 Licencia
+
+Este ecosistema está protegido y distribuido libremente bajo la licencia **MIT**. Para más detalles sobre su distribución, por favor consulta el archivo `LICENSE` incluido en la raíz de este repositorio.

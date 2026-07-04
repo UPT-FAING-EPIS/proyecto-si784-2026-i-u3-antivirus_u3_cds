@@ -1,0 +1,47 @@
+# === Node.js & TypeScript ===
+node_modules/
+dist/
+out/
+build/
+*.vsix
+.env
+.env.*
+!.env.example
+.DS_Store
+
+# === Python ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# === Playwright & Testing ===
+playwright-report/
+test-results/
+coverage/
+reports/
+.nyc_output/
+
+# === Terraform ===
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+*.tfvars.json
+
+# === Editors & OS ===
+.vscode/
+.idea/
+*.swp
+*.swo
+Thumbs.db
+
+# === ClamAV & Logs ===
+clamav_db/
+*.log
