@@ -38,427 +38,212 @@ Versión *2.0*
 |:---:|:---|:---|:---|:---|
 | Versión | Hecha por | Revisada por | Aprobada por | Fecha | Motivo |
 | 1.0 | LLica Mamani, Jimmy Mijair | Sierra Ruiz, Iker Alberto | LLica Mamani, Jimmy Mijair | 02/06/2026 | Versión Inicial |
-| 2.0 | Equipo RustGuard | Mag. Patrick Cuadros Quiroga | Equipo RustGuard | 04/07/2026 | Especificación completa basada en código fuente |
+| 2.0 | Equipo RustGuard | Mag. Patrick Cuadros Quiroga | Equipo RustGuard | 04/07/2026 | Especificación consolidada (Tres subsistemas) |
 
 <div style="page-break-after: always; visibility: hidden"></div>
 
-# **INDICE GENERAL**
+# **ÍNDICE GENERAL**
 
-[1. Introducción](#1-introducción)
-
-&nbsp;&nbsp;[1.1 Propósito](#11-propósito)
-
-&nbsp;&nbsp;[1.2 Alcance](#12-alcance)
-
-&nbsp;&nbsp;[1.3 Definiciones y Acrónimos](#13-definiciones-y-acrónimos)
-
-[2. Descripción General](#2-descripción-general)
-
-&nbsp;&nbsp;[2.1 Perspectiva del Producto](#21-perspectiva-del-producto)
-
-&nbsp;&nbsp;[2.2 Funciones del Producto](#22-funciones-del-producto)
-
-[3. Requerimientos Funcionales](#3-requerimientos-funcionales)
-
-&nbsp;&nbsp;[3.1 Módulo de Escaneo (Motor ClamAV)](#31-módulo-de-escaneo-motor-clamav)
-
-&nbsp;&nbsp;[3.2 Módulo de Protección en Tiempo Real](#32-módulo-de-protección-en-tiempo-real)
-
-&nbsp;&nbsp;[3.3 Módulo Anti-Ransomware (Honeypot)](#33-módulo-anti-ransomware-honeypot)
-
-&nbsp;&nbsp;[3.4 Módulo de Cuarentena](#34-módulo-de-cuarentena)
-
-&nbsp;&nbsp;[3.5 Módulo de Historial y Logs](#35-módulo-de-historial-y-logs)
-
-&nbsp;&nbsp;[3.6 Módulo de Interfaz de Usuario](#36-módulo-de-interfaz-de-usuario)
-
-[4. Requerimientos No Funcionales](#4-requerimientos-no-funcionales)
-
-&nbsp;&nbsp;[4.1 Rendimiento](#41-rendimiento)
-
-&nbsp;&nbsp;[4.2 Seguridad](#42-seguridad)
-
-&nbsp;&nbsp;[4.3 Usabilidad](#43-usabilidad)
-
-&nbsp;&nbsp;[4.4 Portabilidad](#44-portabilidad)
-
-[5. Diagrama de Casos de Uso General](#5-diagrama-de-casos-de-uso-general)
-
-[6. Diagrama de Paquetes](#6-diagrama-de-paquetes)
-
-[7. Especificación de Casos de Uso](#7-especificación-de-casos-de-uso)
+1. [Introducción](#1-introducción)
+2. [Descripción General](#2-descripción-general)
+3. [Modelado del Sistema y Casos de Uso](#3-modelado-del-sistema-y-casos-de-uso)
+4. [Requisitos Funcionales Específicos (RF)](#4-requisitos-funcionales-específicos-rf)
+5. [Requisitos No Funcionales (RNF)](#5-requisitos-no-funcionales-rnf)
+6. [Interfaces Externas](#6-interfaces-externas)
+7. [Diagrama de Comportamiento Dinámico](#7-diagrama-de-comportamiento-dinámico)
 
 <div style="page-break-after: always; visibility: hidden"></div>
 
-## 1. Introducción
+# 1. Introducción
 
 ### 1.1 Propósito
+El presente documento de Especificación de Requisitos de Software (SRS / FD03) tiene como propósito definir detalladamente los requerimientos funcionales y no funcionales del proyecto **RustGuard - Antivirus System**. Este documento está dirigido a los desarrolladores de software, ingenieros de QA, arquitectos de sistemas y *stakeholders* del proyecto, estableciendo una base rigurosa (acorde a estándares tipo IEEE 830) para el desarrollo, validación y despliegue del producto.
 
-El presente documento tiene como propósito definir de manera exhaustiva todos los requerimientos funcionales y no funcionales del sistema **RustGuard Antivirus**, una aplicación de escritorio basada en Electron y React que integra el motor antivirus ClamAV. Este informe constituye un contrato técnico entre el equipo de desarrollo y los interesados del proyecto, sirviendo como referencia para las fases de diseño, implementación, pruebas y validación.
+### 1.2 Alcance del Producto
+RustGuard es una aplicación de seguridad *endpoint* de escritorio que provee protección contra malware en tiempo real, análisis bajo demanda y un entorno de cuarentena seguro. Desarrollada con un modelo de separación de privilegios usando **React 19** para el frontend y **Electron** para el backend (con integración a **ClamAV**), la solución centraliza la gestión local de amenazas sin incurrir en consumos excesivos de memoria. El sistema se apoya adicionalmente en una infraestructura *cloud* orquestada por Terraform para futuras integraciones, basando su ciclo de vida en flujos estrictos de integración continua (GitHub Actions).
 
-### 1.2 Alcance
-
-El sistema RustGuard Antivirus abarca los siguientes módulos funcionales:
-- **Motor de escaneo** con tres modalidades (rápido, completo, personalizado)
-- **Protección en tiempo real** del sistema de archivos
-- **Escudo anti-ransomware** basado en heurística por honeypots
-- **Gestión de cuarentena** con persistencia en SQLite
-- **Historial y logging** con exportación
-- **Interfaz gráfica** con ventana Frameless y tema oscuro
-
-### 1.3 Definiciones y Acrónimos
-
-| Término | Definición |
-| :--- | :--- |
-| **ClamAV** | Motor antivirus de código abierto desarrollado por Cisco, basado en detección por firmas. |
-| **clamd** | Demonio (servicio en background) de ClamAV que mantiene las firmas cargadas en memoria. |
-| **clamdscan** | Cliente de línea de comandos que envía archivos al demonio clamd para su análisis. |
-| **freshclam** | Herramienta de actualización automática de firmas ClamAV desde servidores remotos. |
-| **IPC** | Inter-Process Communication. Mecanismo de Electron para comunicar el proceso Main con el Renderer. |
-| **Honeypot** | Archivo señuelo desplegado intencionalmente para detectar actividad maliciosa. |
-| **WAL** | Write-Ahead Logging. Modo de SQLite que mejora la integridad y el rendimiento de escritura. |
-| **BDD** | Behavior-Driven Development. Metodología que define pruebas en lenguaje natural (Gherkin). |
+### 1.3 Convenciones del Documento
+* **RF-XX:** Requisito Funcional número XX.
+* **RNF-XX:** Requisito No Funcional número XX.
+* **CU-XX:** Caso de Uso número XX.
+* **Prioridades:** 
+  * **Alta:** Imprescindible para el lanzamiento (MVP).
+  * **Media:** Necesaria pero con *workarounds* temporales.
+  * **Baja:** Deseable para iteraciones futuras.
+* **IPC (Inter-Process Communication):** Mecanismo de paso de mensajes entre el proceso de renderizado (React) y el proceso principal (Node.js/Electron).
 
 ---
 
-## 2. Descripción General
+# 2. Descripción General
 
 ### 2.1 Perspectiva del Producto
-
-RustGuard es un producto de software independiente que se ejecuta como aplicación de escritorio nativa mediante Electron.js. No depende de servicios en la nube para su funcionamiento core (escaneo, cuarentena, historial). La única comunicación externa ocurre durante la actualización de firmas (`freshclam`), que contacta con `database.clamav.net`.
-
-### 2.2 Funciones del Producto
-
-El producto provee las siguientes funciones de alto nivel:
+RustGuard opera como un sistema autónomo en el equipo local del usuario, interceptando llamadas al sistema de archivos y delegando el análisis criptográfico y heurístico al demonio de ClamAV instalado en el host.
 
 ```mermaid
-mindmap
-  root((RustGuard Antivirus))
-    Escaneo
-      Rápido
-      Completo
-      Personalizado
-      Cancelación
-    Protección
-      Tiempo Real
-      Anti-Ransomware
-    Gestión
-      Cuarentena
-      Historial
-      Exportación
-      Logs
-    Configuración
-      Firmas ClamAV
-      Demonio clamd
-      clamd.conf dinámico
+graph TD
+    subgraph Frontend - Interfaz de Usuario
+        UI[React 19 / TailwindCSS UI]
+    end
+
+    subgraph Backend - Proceso Principal Electron
+        IPC[Puente IPC Seguro]
+        Q_MGR[Gestor de Cuarentena]
+        FILE_MON[Monitor de Archivos - fs.watch]
+    end
+
+    subgraph Sistema Operativo Host
+        CLAM[Demonio ClamAV - clamscan]
+        FS[(Sistema de Archivos)]
+    end
+
+    subgraph Infraestructura CI/CD y Cloud
+        GH[GitHub Actions - Semgrep/Snyk]
+        AWS[AWS - Terraform]
+    end
+
+    UI <-->|JSON Messages| IPC
+    IPC <--> Q_MGR
+    IPC <--> FILE_MON
+    FILE_MON -->|Lee eventos de E/S| FS
+    FILE_MON -->|Llama ejecución de análisis| CLAM
+    CLAM -->|Escanea| FS
+    Q_MGR -->|Mueve y cifra archivos| FS
+    GH -.->|Despliega binarios y valida| AWS
 ```
 
----
+### 2.2 Funciones del Producto
+1. Monitoreo en tiempo real de los directorios críticos (ej. Descargas).
+2. Escaneo de archivos, carpetas y discos bajo demanda.
+3. Gestión del aislamiento de archivos en bóveda de cuarentena cifrada.
+4. Consulta y visualización de reportes históricos de escaneo.
+5. Actualización automatizada de la base de datos de firmas locales.
 
-## 3. Requerimientos Funcionales
+### 2.3 Características de los Usuarios
+* **Usuario Final:** Posee conocimientos informáticos básicos. Requiere una interfaz altamente reactiva y visual (cero configuraciones manuales complejas) que simplemente informe sobre el estado de seguridad.
+* **Administrador del Sistema / TI:** Usuario técnico con privilegios elevados. Configura reglas de exclusión, revisa logs de comportamiento detallados y administra la cuarentena global del equipo.
 
-### 3.1 Módulo de Escaneo (Motor ClamAV)
-
-| ID | Requerimiento | Prioridad | Implementación |
-| :---: | :--- | :---: | :--- |
-| **RF-01** | El sistema debe ejecutar un escaneo rápido que analice las carpetas `AppData`, `Downloads`, `Temp` y `Startup` del usuario activo. | Alta | `clamav.js → quickScan()` |
-| **RF-02** | El sistema debe ejecutar un escaneo completo del disco `C:\` de la máquina. | Alta | `clamav.js → fullScan()` |
-| **RF-03** | El sistema debe permitir al usuario seleccionar una carpeta específica mediante un diálogo nativo del SO para escaneo personalizado. | Alta | `main.js → select-folder` + `clamav.js → scanTarget()` |
-| **RF-04** | El sistema debe recopilar recursivamente todos los archivos del directorio objetivo en un archivo temporal de lista antes de invocar clamdscan. | Media | `clamav.js → generateScanList()` |
-| **RF-05** | El sistema debe parsear cada línea de salida de clamdscan clasificándola como `CLEAN`, `THREAT`, `IGNORED` o `INFO`. | Alta | `clamav.js → parseClamScanLine()` |
-| **RF-06** | El sistema debe permitir cancelar un escaneo activo en cualquier momento, tanto durante la recopilación de archivos como durante el análisis ClamAV. | Alta | `clamav.js → cancelActiveScan()` |
-| **RF-07** | El sistema debe actualizar automáticamente las firmas ClamAV al arrancar la aplicación usando `freshclam`. | Media | `clamav.js → updateSignatures()` |
-| **RF-08** | El sistema debe iniciar el demonio `clamd` con configuración dinámica al arranque, esperando hasta 15 segundos como fallback de inicialización. | Alta | `clamd_service.js → startClamdService()` |
-| **RF-09** | El sistema debe generar dinámicamente los archivos `clamd.conf` y `freshclam.conf` en el directorio userData con rutas absolutas correctas. | Media | `config_generator.js → generateClamAVConfigs()` |
-
-### 3.2 Módulo de Protección en Tiempo Real
-
-| ID | Requerimiento | Prioridad | Implementación |
-| :---: | :--- | :---: | :--- |
-| **RF-10** | El sistema debe monitorear en tiempo real las carpetas `Downloads` y `Desktop` del usuario usando el módulo `chokidar`. | Alta | `watcher.js → startWatcher()` |
-| **RF-11** | El sistema debe configurar `awaitWriteFinish` con una estabilización de 2000ms para evitar escanear archivos parcialmente descargados. | Media | `watcher.js` (options) |
-| **RF-12** | El sistema debe encolar los archivos detectados y procesarlos secuencialmente para evitar sobrecargar el motor ClamAV. | Alta | `watcher.js → handleFileChange() + processQueue()` |
-| **RF-13** | Si se detecta una amenaza en tiempo real, el sistema debe emitir una notificación nativa de Windows y enviar una señal IPC al frontend. | Alta | `watcher.js → Notification + win.webContents.send('threat-detected')` |
-| **RF-14** | El sistema debe permitir activar y desactivar la protección en tiempo real desde el frontend sin reiniciar la aplicación. | Alta | `main.js → toggle-realtime` |
-
-### 3.3 Módulo Anti-Ransomware (Honeypot)
-
-| ID | Requerimiento | Prioridad | Implementación |
-| :---: | :--- | :---: | :--- |
-| **RF-15** | El sistema debe desplegar archivos señuelo ocultos (`.rg_canary.docx`, `.rg_canary.jpg`) en las carpetas `Documents` y `Desktop`. | Alta | `honeypot.js → deployHoneypots()` |
-| **RF-16** | Los archivos honeypot deben marcarse como ocultos en Windows mediante el comando `attrib +h`. | Media | `honeypot.js` (child_process exec) |
-| **RF-17** | El sistema debe monitorear los archivos honeypot con `chokidar` para detectar eventos de `change` (modificación) y `unlink` (eliminación). | Alta | `honeypot.js → startAntiRansomware()` |
-| **RF-18** | Si un honeypot es alterado, el sistema debe: forzar la ventana a primer plano (`alwaysOnTop`), maximizar la ventana y enviar una alerta crítica al frontend. | Crítica | `honeypot.js → handleRansomwareDetection()` |
-| **RF-19** | Al desactivar el anti-ransomware, el sistema debe eliminar todos los archivos honeypot del disco y cerrar el watcher. | Media | `honeypot.js → stopAntiRansomware()` |
-
-### 3.4 Módulo de Cuarentena
-
-| ID | Requerimiento | Prioridad | Implementación |
-| :---: | :--- | :---: | :--- |
-| **RF-20** | El sistema debe mover archivos infectados a una carpeta de cuarentena en `userData/quarantine/`, renombrándolos con timestamp y extensión `.quar`. | Alta | `quarantine.js → quarantineFile()` |
-| **RF-21** | El sistema debe registrar en la tabla `quarantine` de SQLite la ruta original, ruta de cuarentena, nombre de amenaza y fecha de aislamiento. | Alta | `db.js → insertQuarantineRecord()` |
-| **RF-22** | El sistema debe permitir restaurar un archivo desde cuarentena a su ruta original, actualizando el registro en la base de datos. | Media | `quarantine.js → restoreFile()` |
-| **RF-23** | El sistema debe permitir eliminar permanentemente un archivo de cuarentena del disco, marcándolo como procesado en la base de datos. | Media | `quarantine.js → deletePermanently()` |
-| **RF-24** | El sistema debe mostrar en la UI únicamente los registros de cuarentena activos (campo `restored = 0`). | Baja | `Quarantine.jsx → filter(r => r.restored === 0)` |
-
-### 3.5 Módulo de Historial y Logs
-
-| ID | Requerimiento | Prioridad | Implementación |
-| :---: | :--- | :---: | :--- |
-| **RF-25** | El sistema debe registrar el inicio de cada escaneo en la tabla `scan_history` con tipo, fecha de inicio, ruta del log y estado `running`. | Alta | `db.js → insertScanStart()` |
-| **RF-26** | El sistema debe actualizar el registro al finalizar con la fecha de fin, archivos escaneados, amenazas encontradas y estado final (`completed`, `cancelled`, `error`). | Alta | `db.js → updateScanFinish()` |
-| **RF-27** | Cada sesión de escaneo debe generar un archivo de log con formato `YYYY-MM-DD_HH-MM-SS.log` en el directorio `userData/logs/`. | Media | `logger.js → initSessionLog()` |
-| **RF-28** | El sistema debe emitir cada línea de log al proceso Renderer vía IPC para el visor en tiempo real. | Alta | `logger.js → writeLog()` |
-| **RF-29** | El sistema debe permitir exportar el historial completo a un archivo `.txt` con formato legible, usando un diálogo nativo de guardado. | Media | `main.js → export-history` |
-| **RF-30** | El sistema debe permitir abrir y visualizar el log de cualquier escaneo pasado en un modal con scroll y parsing de niveles. | Baja | `History.jsx → handleOpenLog()` |
-
-### 3.6 Módulo de Interfaz de Usuario
-
-| ID | Requerimiento | Prioridad | Implementación |
-| :---: | :--- | :---: | :--- |
-| **RF-31** | La aplicación debe presentar una ventana Frameless con barra de título personalizada que incluya botones de minimizar, maximizar y cerrar. | Alta | `Titlebar.jsx` + `main.js (frame: false)` |
-| **RF-32** | La barra lateral debe mostrar 5 secciones de navegación: Dashboard, Escaneo, Tiempo Real, Cuarentena e Historial. | Alta | `Sidebar.jsx` |
-| **RF-33** | El Dashboard debe mostrar el estado general del sistema (PROTEGIDO/AMENAZA/ESCANEANDO), estadísticas de firmas, último escaneo y toggle de tiempo real. | Alta | `Dashboard.jsx` |
-| **RF-34** | Al detectar una amenaza en cualquier modo de escaneo, el sistema debe mostrar un modal con el nombre de la amenaza, la ruta del archivo y opciones de cuarentena o ignorar. | Alta | `ThreatModal.jsx` |
-| **RF-35** | Al detectar actividad de ransomware, el sistema debe mostrar un modal de pantalla completa con fondo rojo y recomendaciones de emergencia. | Crítica | `RansomwareAlertModal.jsx` |
-| **RF-36** | El visor de logs debe soportar auto-scroll, colorización por nivel (SUCCESS, DANGER, WARNING, INFO) y copiado al portapapeles. | Media | `LogViewer.jsx` |
-| **RF-37** | La aplicación debe mostrar un splash screen durante la carga inicial de firmas y el arranque del demonio ClamAV. | Baja | `splash.html` + `main.js` |
+### 2.4 Restricciones de Diseño e Implementación
+* El frontend no tiene acceso nativo a APIs de Node.js por diseño (seguridad de Electron). Toda comunicación debe hacerse vía `contextBridge`.
+* Dependencia estricta del binario ejecutable `clamscan` de ClamAV en el sistema operativo local.
+* La aplicación se distribuye como un paquete cerrado (.exe, .deb o .dmg) gestionado a través de los pipelines de liberación.
 
 ---
 
-## 4. Requerimientos No Funcionales
+# 3. Modelado del Sistema y Casos de Uso
 
-### 4.1 Rendimiento
-
-| ID | Requerimiento | Métrica |
-| :---: | :--- | :--- |
-| **RNF-01** | El escaneo rápido no debe bloquear la interfaz de usuario en ningún momento. | 0 congelamientos de UI (spawn asíncrono) |
-| **RNF-02** | La actualización de firmas debe completarse en menos de 60 segundos con conexión estable. | ≤ 60s |
-| **RNF-03** | El demonio clamd debe estar operativo en máximo 15 segundos tras el arranque. | ≤ 15s (fallback timeout) |
-| **RNF-04** | El monitoreo en tiempo real debe esperar 2 segundos de estabilización antes de escanear un archivo nuevo. | `stabilityThreshold: 2000ms` |
-
-### 4.2 Seguridad
-
-| ID | Requerimiento | Implementación |
-| :---: | :--- | :--- |
-| **RNF-05** | El proceso Renderer no debe tener acceso directo a las APIs de Node.js (`nodeIntegration: false`). | `main.js → webPreferences` |
-| **RNF-06** | Toda comunicación entre Main y Renderer debe pasar por el `contextBridge` con APIs explícitamente expuestas. | `preload.cjs → contextBridge.exposeInMainWorld()` |
-| **RNF-07** | La base de datos SQLite debe operar en modo WAL para garantizar integridad ante cierres inesperados. | `db.js → db.pragma('journal_mode = WAL')` |
-| **RNF-08** | Los archivos temporales de listas de escaneo deben ser eliminados al finalizar o cancelar el escaneo. | `clamav.js → fs.unlinkSync(listFilePath)` |
-
-### 4.3 Usabilidad
-
-| ID | Requerimiento |
-| :---: | :--- |
-| **RNF-09** | La interfaz debe seguir un tema oscuro con paleta de colores definida en variables CSS. |
-| **RNF-10** | Todos los elementos interactivos deben tener feedback visual (hover, transiciones, animaciones). |
-| **RNF-11** | Los estados vacíos deben mostrar mensajes claros e iconografía descriptiva (ej. "La cuarentena está vacía"). |
-| **RNF-12** | Las acciones destructivas (restaurar archivo infectado, eliminar permanentemente) deben requerir confirmación del usuario. |
-
-### 4.4 Portabilidad
-
-| ID | Requerimiento |
-| :---: | :--- |
-| **RNF-13** | La aplicación debe generar una versión portable (sin instalación) además del instalador NSIS. |
-| **RNF-14** | Las firmas ClamAV deben distribuirse como `extraResources` del empaquetado de Electron para ejecución sin conexión. |
-| **RNF-15** | El sistema debe crear automáticamente los directorios necesarios (`logs/`, `db/`, `quarantine/`, `clamav_db/`) en el primer arranque. |
-
----
-
-## 5. Diagrama de Casos de Uso General
+### 3.1 Diagrama de Casos de Uso
 
 ```mermaid
 flowchart LR
-    User([👤 Usuario Final])
+    Actor_User([Usuario Final])
+    Actor_Admin([Administrador TI])
+    Actor_System([Demonio Sistema])
 
-    subgraph RustGuard["🛡️ RustGuard Antivirus"]
-        direction TB
-        
-        subgraph Escaneo["Módulo de Escaneo"]
-            UC01(Ejecutar Escaneo Rápido)
-            UC02(Ejecutar Escaneo Completo)
-            UC03(Escanear Carpeta Específica)
-            UC04(Cancelar Escaneo Activo)
-        end
-
-        subgraph Proteccion["Módulo de Protección"]
-            UC05(Activar/Desactivar Tiempo Real)
-            UC06(Activar/Desactivar Anti-Ransomware)
-        end
-
-        subgraph Cuarentena["Módulo de Cuarentena"]
-            UC07(Mover Archivo a Cuarentena)
-            UC08(Restaurar Archivo)
-            UC09(Eliminar Permanentemente)
-        end
-
-        subgraph Historial["Módulo de Historial"]
-            UC10(Consultar Historial de Escaneos)
-            UC11(Exportar Historial a TXT)
-            UC12(Visualizar Log de Sesión)
-        end
+    subgraph RustGuard Antivirus
+        CU1(Escaneo Rápido de Archivos)
+        CU2(Monitoreo en Tiempo Real)
+        CU3(Revisar Historial de Alertas)
+        CU4(Gestionar Cuarentena)
+        CU5(Configurar Exclusiones de Ruta)
+        CU6(Actualizar Firmas ClamAV)
     end
 
-    User --> UC01
-    User --> UC02
-    User --> UC03
-    User --> UC04
-    User --> UC05
-    User --> UC06
-    User --> UC07
-    User --> UC08
-    User --> UC09
-    User --> UC10
-    User --> UC11
-    User --> UC12
+    Actor_User --> CU1
+    Actor_User --> CU3
+    Actor_Admin --> CU1
+    Actor_Admin --> CU4
+    Actor_Admin --> CU5
+    
+    Actor_System --> CU2
+    Actor_System --> CU6
+    CU2 -.->|include| CU1
 ```
+
+### 3.2 Especificación de Casos de Uso Principales
+
+| ID | Nombre | Actor | Precondiciones | Flujo Principal | Flujos Alternativos | Postcondiciones |
+|:---|:---|:---|:---|:---|:---|:---|
+| **CU-01** | Escaneo Bajo Demanda | Usuario Final | El servicio principal de Electron y ClamAV están en ejecución. | 1. El usuario selecciona un archivo/carpeta en la GUI. <br> 2. La UI envía mensaje IPC de inicio de escaneo. <br> 3. El backend invoca a `clamscan`. <br> 4. El motor analiza el archivo y retorna `STDOUT`. <br> 5. La UI muestra el resultado (Limpio o Infectado). | **3a.** ClamAV no está instalado/accesible: El sistema notifica error de dependencia y aborta. | El resultado se almacena en los logs locales de SQLite. |
+| **CU-02** | Gestión de Cuarentena (Aislamiento) | Administrador TI | Una amenaza ha sido detectada en un escaneo previo. | 1. El admin ingresa a la pestaña "Cuarentena". <br> 2. Selecciona un archivo infectado y elige "Aislar". <br> 3. El backend lee el archivo y lo cifra (ej. AES-256). <br> 4. Se mueve el archivo cifrado a la bóveda. <br> 5. Se elimina el original del directorio fuente. | **5a.** Permisos insuficientes para borrar: El backend intenta escalar privilegios y de fallar, notifica al usuario crítico. | El archivo ya no representa riesgo de ejecución; estado guardado en base de datos. |
+| **CU-03** | Actualización de Firmas | Demonio Sistema | Conexión a Internet activa en el host. | 1. El temporizador interno dispara el evento (cada 12h). <br> 2. El proceso principal ejecuta `freshclam`. <br> 3. Se descargan las firmas `.cvd` nuevas. <br> 4. Se reinicia silenciosamente el worker del demonio. | **3a.** Conexión de red caída: El sistema encola el reintento para dentro de 1 hora. | ClamAV queda operando con las últimas bases de virus disponibles. |
 
 ---
 
-## 6. Diagrama de Paquetes
+# 4. Requisitos Funcionales Específicos (RF)
+
+| ID | Módulo | Descripción Técnica Detallada | Prioridad |
+|:---|:---|:---|:---|
+| **RF-01** | Core / Escáner | El sistema debe proveer una vía IPC (`ipcMain.handle('scan-path', callback)`) que reciba rutas absolutas y ejecute un subproceso asíncrono llamando a `clamscan <path>`. | Alta |
+| **RF-02** | Core / Escáner | El resultado del proceso de ClamAV (STDOUT) debe ser analizado mediante expresiones regulares para identificar y extraer el término "FOUND" y el nombre de la firma de virus detectada. | Alta |
+| **RF-03** | Interfaz / GUI | El frontend en React debe renderizar un Dashboard principal visualizando 3 métricas en tiempo real: Archivos escaneados hoy, Amenazas detectadas, y Estado de la firma. | Alta |
+| **RF-04** | Cuarentena | La función de cuarentena debe utilizar el módulo `crypto` de Node.js para cifrar el *buffer* del archivo detectado usando el algoritmo `aes-256-cbc` antes de escribirlo en la carpeta segura. | Alta |
+| **RF-05** | Cuarentena | El sistema debe almacenar metadatos de cuarentena (Ruta original, Hash MD5, Fecha, Vector de Inicialización del cifrado) en un archivo JSON o base de datos SQLite local incrustada. | Media |
+| **RF-06** | Cuarentena | El sistema debe proveer una acción de "Restauración", que descifre el archivo utilizando la clave asimétrica interna y lo mueva de regreso a su ruta original. | Media |
+| **RF-07** | Monitor | El sistema debe utilizar la API `fs.watch()` (o librerías como `chokidar`) para detectar de forma pasiva eventos de creación de archivos (`add`) en las carpetas "Descargas" y "Documentos". | Alta |
+| **RF-08** | Interfaz / Log | Todo escaneo finalizado debe registrar un evento en un archivo de log estandarizado (formato NDJSON o texto plano) almacenado en `%APPDATA%/RustGuard/logs`. | Media |
+| **RF-09** | Actualizador | El sistema debe invocar mediante `child_process.exec` el comando `freshclam` para forzar la actualización de definiciones, manejando el retorno de código `0` como éxito. | Alta |
+| **RF-10** | Configuración | La interfaz debe permitir al usuario añadir *strings* de exclusión (Regex o rutas parciales). El servicio backend omitirá enviar a `clamscan` cualquier archivo que coincida con dichas exclusiones. | Baja |
+
+---
+
+# 5. Requisitos No Funcionales (RNF)
+
+| Categoría | Atributo de Calidad / Requisito |
+|:---|:---|
+| **Rendimiento** | **RNF-01:** La huella de memoria (RAM) del proceso de UI (Electron Render) no debe superar los 150 MB en estado de inactividad (Idle).<br>**RNF-02:** El tiempo de inicialización de la interfaz (desde doble clic al icono hasta renderizado del DOM) debe ser menor a 2.5 segundos. |
+| **Seguridad** | **RNF-03:** El protocolo `nodeIntegration` debe estar estrictamente en `false` en la ventana principal de Electron, delegando funciones exclusivas a través del `preload.js` (Context Isolation).<br>**RNF-04:** Las llaves AES usadas para la cuarentena deben generarse y almacenarse en los anillos de claves seguros del SO anfitrión (ej. Windows Credential Manager / Keychain). |
+| **Confiabilidad y Disponibilidad** | **RNF-05:** Si el subproceso de monitoreo de directorios lanza una excepción fatal, un proceso "Watchdog" interno debe reiniciar el servicio en menos de 5 segundos sin cerrar la ventana gráfica. |
+| **Mantenibilidad** | **RNF-06:** El código debe adherirse a los lineamientos arquitectónicos separados (Clean Architecture), donde la lógica de negocio (casos de uso) y la infraestructura (ClamAV, Sistema de Archivos) están desacopladas mediante interfaces abstractas en TypeScript.<br>**RNF-07:** Todos los componentes de React deben contar con pruebas funcionales usando Testing Library y Vitest garantizando un >60% de cobertura. |
+
+---
+
+# 6. Interfaces Externas
+
+### 6.1 Interfaces de Usuario (GUI)
+La interfaz se desarrolla en **React 19** con **TailwindCSS 4**. Debe ofrecer:
+* **Tema Oscuro (Dark Mode) Nativo:** Alineado con estándares de aplicaciones modernas.
+* **Componentes Reactivos:** Uso de framer-motion o transiciones CSS para mostrar barras de progreso fluidas durante escaneos largos.
+* **Notificaciones de Sistema (Toasts/OS Notifications):** Uso de la API nativa `Notification` de HTML5 (orquestada por Electron) para advertir al usuario sobre amenazas cuando la ventana principal esté minimizada.
+
+### 6.2 Interfaces de Software/APIs
+* **Interfaz ClamAV (CLI):** La comunicación con el motor subyacente se realiza íntegramente a través de la CLI del sistema local utilizando *Standard In/Out*.
+* **Interfaz de Sistema de Archivos:** Integración profunda con APIs de Node.js (`fs`, `path`, `os`) para la lectura agresiva de descriptores de archivos de manera asíncrona (Stream/Buffer).
+* **Endpoints de Telemetría (Futuro):** La aplicación debe estructurarse para permitir *webhooks* salientes (JSON sobre HTTPS) hacia la infraestructura aprovisionada por Terraform en AWS para reporte centralizado de incidentes en entornos corporativos.
+
+---
+
+# 7. Diagrama de Comportamiento Dinámico
+
+El siguiente diagrama de secuencia detalla el proceso crítico de escaneo en tiempo real de un archivo nuevo y su consecuente gestión de cuarentena, evidenciando las interacciones entre los componentes del sistema.
 
 ```mermaid
-graph TB
-    subgraph Frontend["📦 Frontend (React 19 + TailwindCSS)"]
-        direction TB
-        subgraph Pages["src/pages/"]
-            Dashboard["Dashboard.jsx"]
-            Scan["Scan.jsx"]
-            RealTime["RealTime.jsx"]
-            Quarantine["Quarantine.jsx"]
-            History["History.jsx"]
-        end
-        subgraph Components["src/components/"]
-            Layout["Layout.jsx"]
-            Sidebar["Sidebar.jsx"]
-            Titlebar["Titlebar.jsx"]
-            LogViewer["LogViewer.jsx"]
-            ThreatModal["ThreatModal.jsx"]
-            RansomwareModal["RansomwareAlertModal.jsx"]
-        end
-        App["App.jsx"]
-        App --> Layout
-        App --> RansomwareModal
-        Layout --> Sidebar
-        Layout --> Titlebar
-        Scan --> LogViewer
-        Scan --> ThreatModal
-    end
+sequenceDiagram
+    participant OS as Sistema Operativo
+    participant FS_Mon as Monitor FS (Chokidar)
+    participant Backend as Backend Electron (Node)
+    participant ClamAV as Motor ClamAV
+    participant Vault as Gestor Cuarentena (Crypto)
+    participant React as Frontend React
 
-    subgraph Backend["📦 Backend (Electron Main Process)"]
-        direction TB
-        subgraph Core["electron/ - Módulos Core"]
-            MainJS["main.js (IPC Hub)"]
-            ClamAV["clamav.js (Motor)"]
-            ClamdSvc["clamd_service.js"]
-            ConfigGen["config_generator.js"]
-        end
-        subgraph Data["electron/ - Datos"]
-            DB["db.js (SQLite)"]
-            Logger["logger.js"]
-            Paths["paths.js"]
-        end
-        subgraph Security["electron/ - Seguridad"]
-            QuarantineMod["quarantine.js"]
-            Watcher["watcher.js"]
-            Honeypot["honeypot.js"]
-        end
-        Preload["preload.cjs (IPC Bridge)"]
+    OS->>FS_Mon: Evento "File Created" (archivo.exe)
+    FS_Mon->>Backend: triggerScan(path)
+    Backend->>React: ipc.send("scan-started", path)
+    
+    Backend->>ClamAV: child_process.spawn("clamscan", [path])
+    ClamAV-->>Backend: STDOUT: "archivo.exe: Win.Trojan.Agent FOUND"
+    
+    alt Amenaza Detectada
+        Backend->>React: ipc.send("threat-detected", {path, signature})
+        Backend->>Vault: quarantineFile(path)
+        Vault->>OS: fs.readFile(path)
+        OS-->>Vault: Buffer de archivo original
+        Vault->>Vault: Cifrar Buffer (AES-256-CBC)
+        Vault->>OS: fs.writeFile(quarantine_path, buffer_cifrado)
+        Vault->>OS: fs.unlinkSync(path) (Borrado seguro)
+        Vault-->>Backend: result(Success, Quarantine_ID)
+        Backend->>React: ipc.send("quarantine-success", Quarantine_ID)
+    else Archivo Limpio
+        ClamAV-->>Backend: STDOUT: "archivo.exe: OK"
+        Backend->>React: ipc.send("scan-clean", path)
     end
-
-    subgraph External["📦 Sistemas Externos"]
-        ClamAVEngine["ClamAV Engine (clamd/clamdscan)"]
-        FreshClamSvc["freshclam (Actualización)"]
-        FileSystem["Windows File System"]
-    end
-
-    subgraph Testing["📦 Testing"]
-        Vitest["Vitest + Testing Library"]
-        Playwright["Playwright + BDD"]
-        Stryker["Stryker Mutator"]
-    end
-
-    subgraph CICD["📦 CI/CD (GitHub Actions)"]
-        Coverage["coverage.yml"]
-        E2E["e2e.yml"]
-        Mutation["mutation.yml"]
-        StaticAnalysis["static-analysis.yml"]
-        Release["release.yml"]
-        TerraformWF["terraform.yml"]
-    end
-
-    subgraph IaC["📦 Infraestructura (Terraform)"]
-        TFMain["main.tf (AWS S3)"]
-        TFVars["variables.tf"]
-        TFOut["outputs.tf"]
-    end
-
-    Frontend -- "IPC (contextBridge)" --> Preload
-    Preload -- "ipcRenderer" --> MainJS
-    MainJS --> ClamAV
-    MainJS --> ClamdSvc
-    MainJS --> QuarantineMod
-    MainJS --> Watcher
-    MainJS --> Honeypot
-    ClamAV --> ClamAVEngine
-    ClamAV --> DB
-    ClamAV --> Logger
-    Watcher --> ClamAV
-    Watcher --> FileSystem
-    Honeypot --> FileSystem
-    QuarantineMod --> DB
-    DB --> Paths
-    Logger --> Paths
 ```
-
----
-
-## 7. Especificación de Casos de Uso
-
-### CU-01: Ejecutar Escaneo Rápido
-
-| Elemento | Descripción |
-| :--- | :--- |
-| **Actor** | Usuario Final |
-| **Precondiciones** | ClamAV instalado. Demonio clamd activo. No hay escaneo en curso. |
-| **Flujo Principal** | 1. El usuario navega a la sección "Escaneo". 2. Hace clic en "Escaneo Rápido". 3. El sistema recopila archivos de AppData, Downloads, Temp y Startup. 4. Se invoca `clamdscan` con la lista de archivos. 5. Los resultados se muestran en el visor de logs. 6. Al finalizar, se registra en el historial. |
-| **Flujo Alternativo** | Si ClamAV no está instalado, se registra un error en el log y se retorna un resultado vacío. |
-| **Postcondiciones** | Historial actualizado. Log de sesión generado. |
-
-### CU-05: Activar/Desactivar Protección en Tiempo Real
-
-| Elemento | Descripción |
-| :--- | :--- |
-| **Actor** | Usuario Final |
-| **Precondiciones** | Aplicación en ejecución. |
-| **Flujo Principal** | 1. El usuario hace clic en el toggle de Tiempo Real (Dashboard o sección Protección). 2. Si se activa: se inicia `chokidar` en Downloads y Desktop. 3. Si se desactiva: se cierra el watcher. 4. El estado se actualiza en la UI en tiempo real. |
-| **Postcondiciones** | Monitoreo activo o inactivo según la acción del usuario. |
-
-### CU-06: Activar Escudo Anti-Ransomware
-
-| Elemento | Descripción |
-| :--- | :--- |
-| **Actor** | Usuario Final |
-| **Precondiciones** | Aplicación en ejecución. Carpetas Documents y Desktop accesibles. |
-| **Flujo Principal** | 1. El usuario activa el toggle Anti-Ransomware. 2. Se despliegan archivos honeypot ocultos. 3. Se inicia monitoreo de los honeypots. 4. Si un honeypot es alterado: se fuerza la ventana a primer plano y se muestra alerta crítica. |
-| **Flujo Alternativo** | Si no se pueden crear honeypots (permisos), se registra warning y el módulo queda inactivo. |
-| **Postcondiciones** | Honeypots desplegados y monitoreados, o eliminados si se desactiva. |
-
-### CU-07: Mover Archivo a Cuarentena
-
-| Elemento | Descripción |
-| :--- | :--- |
-| **Actor** | Usuario Final |
-| **Precondiciones** | Se ha detectado una amenaza (modal ThreatModal visible). |
-| **Flujo Principal** | 1. El usuario hace clic en "Mover a Cuarentena" en el modal. 2. El archivo se renombra con timestamp y extensión `.quar`. 3. Se mueve a `userData/quarantine/`. 4. Se registra en la tabla `quarantine` de SQLite. 5. El modal se cierra. |
-| **Postcondiciones** | Archivo aislado. Registro en base de datos creado. |
-
----
-
-## Bibliografía
-
-1. IEEE Computer Society. (1998). *IEEE Recommended Practice for Software Requirements Specifications (IEEE Std 830-1998)*. IEEE.
-2. Cockburn, A. (2001). *Writing Effective Use Cases*. Addison-Wesley Professional.
-3. Electron. (2025). *Context Isolation*. Recuperado de https://www.electronjs.org/docs/latest/tutorial/context-isolation
-4. ClamAV. (2025). *ClamAV Configuration Reference*. Recuperado de https://docs.clamav.net/manual/Usage/Configuration.html
-5. Chokidar. (2025). *Chokidar API Documentation*. Recuperado de https://github.com/paulmillr/chokidar

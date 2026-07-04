@@ -37,134 +37,94 @@ Versión *2.0*
 | CONTROL DE VERSIONES | | | | |
 |:---:|:---|:---|:---|:---|
 | Versión | Hecha por | Revisada por | Aprobada por | Fecha | Motivo |
-| 1.0 | Equipo RustGuard | Mag. Patrick Cuadros Quiroga | Equipo RustGuard | 02/06/2026 | Versión Inicial |
-| 2.0 | Equipo RustGuard | Mag. Patrick Cuadros Quiroga | Equipo RustGuard | 04/07/2026 | Estándar consolidado para Electron + React |
+| 1.0 | Equipo RustGuard | Mag. Patrick Cuadros Quiroga | Equipo RustGuard | 04/07/2026 | Documentación Inicial |
+| 2.0 | Equipo RustGuard | Mag. Patrick Cuadros Quiroga | Equipo RustGuard | 04/07/2026 | Actualización para Ecosistema Electron, React y BDD |
 
 <div style="page-break-after: always; visibility: hidden"></div>
 
-# **INDICE GENERAL**
+# **ÍNDICE GENERAL**
 
-[1. Introducción](#1-introducción)
-
-[2. Nomenclatura y Convenciones](#2-nomenclatura-y-convenciones)
-
-[3. Estructura de Archivos](#3-estructura-de-archivos)
-
-[4. Estándares por Tecnología](#4-estándares-por-tecnología)
-
-&nbsp;&nbsp;[4.1 JavaScript / Node.js (Proceso Main)](#41-javascript--nodejs-proceso-main)
-
-&nbsp;&nbsp;[4.2 React JSX (Proceso Renderer)](#42-react-jsx-proceso-renderer)
-
-&nbsp;&nbsp;[4.3 CSS / TailwindCSS](#43-css--tailwindcss)
-
-&nbsp;&nbsp;[4.4 SQL (SQLite)](#44-sql-sqlite)
-
-&nbsp;&nbsp;[4.5 Terraform (HCL)](#45-terraform-hcl)
-
-[5. Estándares de Pruebas](#5-estándares-de-pruebas)
-
-[6. Control de Versiones (Git)](#6-control-de-versiones-git)
+1. [Introducción](#1-introducción)
+2. [Estándares Generales de Nomenclatura](#2-estándares-generales-de-nomenclatura)
+3. [Estándares para el Frontend (React 19, TailwindCSS, Vite)](#3-estándares-para-el-frontend-react-19-tailwindcss-vite)
+4. [Estándares para el Backend de Escritorio (Electron, Node.js)](#4-estándares-para-el-backend-de-escritorio-electron-nodejs)
+5. [Estándares de Pruebas (Vitest, Playwright, Gherkin)](#5-estándares-de-pruebas-vitest-playwright-gherkin)
+6. [Estándares de Infraestructura (Terraform, GitHub Actions)](#6-estándares-de-infraestructura-terraform-github-actions)
+7. [Manejo de Errores y Seguridad IPC](#7-manejo-de-errores-y-seguridad-ipc)
 
 <div style="page-break-after: always; visibility: hidden"></div>
 
 ## 1. Introducción
 
-Este documento define los estándares de programación obligatorios para el desarrollo del sistema **RustGuard Antivirus**. El cumplimiento de estas convenciones garantiza la legibilidad, mantenibilidad y consistencia del código fuente a lo largo de todo el proyecto.
+El sistema **RustGuard Antivirus** está construido bajo una arquitectura de proceso dual utilizando **Electron** (Backend) y **React** (Frontend). Mantener la calidad del software (SQA) requiere la definición de un **Estándar de Programación** estricto que alinee las convenciones semánticas, estructurales y las prácticas de testing (BDD, E2E) aplicadas por los ingenieros de calidad y desarrollo.
 
 ---
 
-## 2. Nomenclatura y Convenciones
+## 2. Estándares Generales de Nomenclatura
 
-| Elemento | Convención | Ejemplo |
-| :--- | :--- | :--- |
-| Variables y funciones | camelCase | `scanTarget`, `isScanning`, `handleFileChange` |
-| Constantes | UPPER_SNAKE_CASE | `CLAMAV_DIR`, `HONEYPOT_NAMES`, `QUARANTINE_DIR` |
-| Componentes React | PascalCase | `Dashboard`, `LogViewer`, `ThreatModal` |
-| Archivos de componente | PascalCase.jsx | `Dashboard.jsx`, `Sidebar.jsx` |
-| Archivos de módulo (backend) | snake_case.js o camelCase.js | `clamd_service.js`, `honeypot.js` |
-| Archivos de test | ComponentName.test.jsx | `Dashboard.test.jsx` |
-| Canales IPC | kebab-case | `scan-quick`, `toggle-realtime`, `get-scan-history` |
-| Tablas SQL | snake_case | `scan_history`, `quarantine` |
-| Campos SQL | snake_case | `files_scanned`, `quarantined_at` |
-| Variables Terraform | snake_case | `aws_region`, `environment` |
-| Workflows GitHub | kebab-case.yml | `static-analysis.yml`, `coverage.yml` |
+Independientemente del módulo del proyecto, RustGuard adopta las siguientes reglas transversales:
+
+* **Idioma de Código:** El código fuente (nombres de variables, funciones, clases, archivos `.feature` de BDD, y flujos de Terraform) se escribirá íntegramente en **Inglés** (Ej. `scanDirectory()`, `ScanResult`, `main.tf`).
+* **Idioma de la UI y Logs Finales:** Todos los textos visibles por el usuario (Alertas, componentes React, Output del sistema) deben redactarse en **Español** (UTF-8).
+* **Variables Estáticas (Constantes):** Deben declararse en `UPPER_SNAKE_CASE` (Ej. `MAX_FILE_SIZE`).
+* **Reglas de Linting:** Todo el proyecto obedece las reglas estrictas de `eslint.config.js`. Cualquier advertencia (*warning*) debe resolverse antes de un *Commit*.
 
 ---
 
-## 3. Estructura de Archivos
+## 3. Estándares para el Frontend (React 19, TailwindCSS, Vite)
 
-- **Proceso Main (Backend):** Todos los módulos se ubican en `electron/`.
-- **Proceso Renderer (Frontend):** Se organiza en `src/components/`, `src/pages/`, `src/test/`.
-- **Pruebas:** Espejo de la estructura del código fuente dentro de `src/test/`.
-- **CI/CD:** Workflows en `.github/workflows/`.
-- **IaC:** Archivos Terraform en `terraform/`.
+El código alojado en el directorio `/src/` sigue patrones modernos de desarrollo web reactivo.
 
----
-
-## 4. Estándares por Tecnología
-
-### 4.1 JavaScript / Node.js (Proceso Main)
-
-- **Módulo:** ES Modules (`import/export`). Excepción: `preload.cjs` usa CommonJS por requerimiento de Electron.
-- **Asincronía:** Usar `async/await` en lugar de callbacks anidados. Las promesas deben tener `catch` o `try/catch`.
-- **Child Process:** Preferir `spawn()` sobre `exec()` para procesos largos (streaming de stdout).
-- **Manejo de errores:** Nunca dejar un `catch` vacío sin al menos un `writeLog('ERROR', ...)`.
-- **File System:** Usar `fs.promises` para operaciones asíncronas. Verificar existencia con `fs.existsSync()` antes de operar.
-
-### 4.2 React JSX (Proceso Renderer)
-
-- **Componentes funcionales:** Todos los componentes deben ser funciones (no clases).
-- **Hooks:** Usar `useState`, `useEffect`, `useRef` según necesidad. No usar hooks de terceros sin justificación.
-- **Props:** Desestructurar en la firma de la función (`function Dashboard({ setCurrentView })`).
-- **Renderizado condicional:** Usar operadores ternarios o `&&` en lugar de `if/else` dentro del JSX.
-- **ElectronAPI guard:** Siempre verificar `if (window.electronAPI)` antes de invocar APIs IPC para permitir ejecución en navegador.
-
-### 4.3 CSS / TailwindCSS
-
-- **Variables CSS:** Definir colores y temas en `index.css` usando custom properties (`--bg-base`, `--accent-primary`, etc.).
-- **Utilidades Tailwind:** Referir las variables CSS dentro de las clases Tailwind (`bg-[var(--bg-panel)]`).
-- **Animaciones:** Usar clases Tailwind para transiciones (`transition-colors`, `animate-pulse`).
-
-### 4.4 SQL (SQLite)
-
-- **Prepared Statements:** Obligatorio para todas las operaciones con parámetros (`db.prepare()`).
-- **Timestamps:** Usar `datetime('now', 'localtime')` para consistencia de zona horaria.
-- **Modo WAL:** Activado globalmente para integridad transaccional.
-
-### 4.5 Terraform (HCL)
-
-- **Formato:** Ejecutar `terraform fmt` antes de cada commit.
-- **Variables:** Definir todas las variables en `variables.tf` con `description` y `default`.
-- **Outputs:** Documentar cada output con su `description`.
+* **Componentes Funcionales:** Uso mandatorio de *React Hooks*. Está prohibido el uso de componentes basados en clases.
+* **Nomenclatura de Archivos:** `PascalCase` para componentes (Ej. `DashboardPanel.jsx`) y `camelCase` para utilidades (Ej. `formatDate.js`).
+* **Estilizado (TailwindCSS 4):**
+  * Las clases utilitarias deben aplicarse directamente en la propiedad `className`.
+  * Se prohíbe el uso de estilos en línea (`style={{ color: 'red' }}`) salvo para valores dinámicos calculados en tiempo de ejecución.
+* **Separación de Responsabilidades:** La lógica compleja debe abstraerse en *Custom Hooks* (Ej. `useScanner.js`) para mantener los componentes de UI limpios y enfocados en el renderizado.
 
 ---
 
-## 5. Estándares de Pruebas
+## 4. Estándares para el Backend de Escritorio (Electron, Node.js)
 
-| Regla | Descripción |
-| :--- | :--- |
-| **Aislamiento** | Cada test debe ser independiente. Usar `beforeEach` para limpiar estado. |
-| **Mocks** | Mockear dependencias externas (`electronAPI`, componentes hijos) con `vi.mock()`. |
-| **Nomenclatura** | Usar `describe('ComponentName')` + `it('descripción del comportamiento')`. |
-| **BDD Features** | Usar Gherkin con `Given/When/Then` en archivos `.feature`. |
-| **Cobertura mínima** | Aspirar a ≥ 80% de cobertura de líneas. |
+El código alojado en el directorio `/electron/` opera con privilegios de sistema operativo y controla al motor ClamAV.
 
----
-
-## 6. Control de Versiones (Git)
-
-| Regla | Ejemplo |
-| :--- | :--- |
-| **Rama principal** | `codigo` (rama de desarrollo activo) |
-| **Commits** | Mensajes descriptivos en español: `feat: agregar módulo anti-ransomware` |
-| **Tags** | Formato semántico: `v1.0.0`, `v1.1.0` |
-| **Archivos ignorados** | `node_modules/`, `dist/`, `release/`, `coverage/`, `*.log` |
+* **Nomenclatura:** Archivos y funciones deben escribirse en `camelCase`.
+* **Manejo de Asincronía:** Es obligatorio el uso de `async / await` en lugar de *Callbacks* tradicionales para evitar el *Callback Hell* al operar con el sistema de archivos (`fs.promises`).
+* **Uso de Child Process:** Las llamadas al ejecutable `clamscan` deben realizarse exclusivamente mediante `child_process.spawn()` (nunca `exec()` para evitar inyecciones de shell con nombres de archivo malformados).
+* **Canal IPC (Inter-Process Communication):** Toda petición de React hacia Node debe fluir a través del `contextBridge` definido en `preload.js`. Se prohíbe exponer directamente objetos de Node (`require`, `process`) al hilo de renderizado.
 
 ---
 
-## Bibliografía
+## 5. Estándares de Pruebas (Vitest, Playwright, Gherkin)
 
-1. Airbnb. (2025). *JavaScript Style Guide*. Recuperado de https://github.com/airbnb/javascript
-2. React. (2025). *Rules of Hooks*. Recuperado de https://react.dev/warnings/invalid-hook-call-warning
-3. ESLint. (2025). *Getting Started*. Recuperado de https://eslint.org/docs/latest/use/getting-started
+La calidad está garantizada mediante un enfoque híbrido BDD/E2E y unitario.
+
+* **Pruebas Unitarias (Vitest):**
+  * Ubicadas en `/src/test/`.
+  * Deben cubrir al menos el **40%** del código lógico para superar la validación de CI.
+  * *Nomenclatura:* `[nombre].test.js`.
+* **Pruebas de Mutación (Stryker):**
+  * Las pruebas unitarias deben diseñarse para detectar fallos si el código es alterado por Stryker. Asegurar aserciones (`expect`) robustas.
+* **Pruebas BDD (Playwright + Gherkin):**
+  * Los escenarios deben definirse en archivos `.feature` dentro de `/src/features/` usando lenguaje Gherkin estricto (`Given`, `When`, `Then`).
+  * Las definiciones de pasos (*Step Definitions*) deben usar selectores accesibles (ej. `getByRole`, `getByText`) preferentemente sobre selectores CSS rígidos.
+
+---
+
+## 6. Estándares de Infraestructura (Terraform, GitHub Actions)
+
+* **Pipelines CI/CD (`.github/workflows/`):**
+  * Nombrar los *jobs* de forma descriptiva (Ej. `run-static-analysis`, `build-electron-app`).
+  * Utilizar matrices para pruebas paralelas cuando sea necesario.
+* **Terraform (`/terraform/`):**
+  * Formateo obligatorio antes de confirmar cambios: `terraform fmt`.
+  * Separar definición de recursos (`main.tf`), variables (`variables.tf`) y salidas (`outputs.tf`).
+  * Seguir convenciones `snake_case` para el nombramiento de recursos cloud.
+
+---
+
+## 7. Manejo de Errores y Seguridad IPC
+
+* **Fallas Silenciosas (Silent Fails):** Nunca ocultar un error. Si una operación falla, usar `console.error` o retornar un objeto serializable con un código de error a la UI. No usar `catch (e) {}` vacío.
+* **Validación de Entradas:** Antes de ejecutar `clamscan`, el backend de Electron debe verificar explícitamente mediante expresiones regulares que la ruta del archivo inyectada a través de IPC no contiene caracteres de escape maliciosos.
+* **Dependencias Seguras:** Ejecutar siempre correcciones de seguridad sugeridas por el flujo *Snyk* de la pipeline para mantener `package-lock.json` blindado contra librerías vulnerables (CVEs).

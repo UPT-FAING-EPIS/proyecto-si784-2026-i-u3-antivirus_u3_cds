@@ -30,7 +30,7 @@ Integrantes:
 
 Sistema *RustGuard Antivirus*
 
-Informe de Arquitectura
+Informe de Arquitectura de Software
 
 Versión *2.0*
 
@@ -38,424 +38,291 @@ Versión *2.0*
 |:---:|:---|:---|:---|:---|
 | Versión | Hecha por | Revisada por | Aprobada por | Fecha | Motivo |
 | 1.0 | Sierra Ruiz, Iker Alberto | LLica Mamani, Jimmy Mijair | Sierra Ruiz, Iker Alberto | 02/06/2026 | Versión Inicial |
-| 2.0 | Equipo RustGuard | Mag. Patrick Cuadros Quiroga | Equipo RustGuard | 04/07/2026 | Arquitectura completa con Modelo C4 |
+| 2.0 | Equipo RustGuard | Mag. Patrick Cuadros Quiroga | Equipo RustGuard | 04/07/2026 | Arquitectura Multi-Plataforma (Integración Final) |
 
 <div style="page-break-after: always; visibility: hidden"></div>
 
-# **INDICE GENERAL**
+# **ÍNDICE GENERAL**
 
-[1. Introducción](#1-introducción)
-
-[2. Representación Arquitectónica - Modelo C4](#2-representación-arquitectónica---modelo-c4)
-
-&nbsp;&nbsp;[2.1 Diagrama de Contexto (Nivel 1)](#21-diagrama-de-contexto-nivel-1)
-
-&nbsp;&nbsp;[2.2 Diagrama de Contenedores (Nivel 2)](#22-diagrama-de-contenedores-nivel-2)
-
-&nbsp;&nbsp;[2.3 Diagrama de Componentes (Nivel 3)](#23-diagrama-de-componentes-nivel-3)
-
-&nbsp;&nbsp;[2.4 Diagrama de Clases (Nivel Lógico)](#24-diagrama-de-clases-nivel-lógico)
-
-[3. Vista de Procesos](#3-vista-de-procesos)
-
-&nbsp;&nbsp;[3.1 Secuencia de Arranque](#31-secuencia-de-arranque)
-
-&nbsp;&nbsp;[3.2 Secuencia de Escaneo](#32-secuencia-de-escaneo)
-
-&nbsp;&nbsp;[3.3 Secuencia Anti-Ransomware](#33-secuencia-anti-ransomware)
-
-[4. Vista de Despliegue](#4-vista-de-despliegue)
-
-[5. Vista de Datos](#5-vista-de-datos)
-
-[6. Restricciones de Diseño](#6-restricciones-de-diseño)
-
-[7. Patrones Arquitectónicos](#7-patrones-arquitectónicos)
-
-[8. Decisiones Arquitectónicas](#8-decisiones-arquitectónicas)
+1. [Introducción y Metas Arquitectónicas](#1-introducción-y-metas-arquitectónicas)
+2. [Vista de Casos de Uso (Interacciones Principales)](#2-vista-de-casos-de-uso-interacciones-principales)
+3. [Vista Lógica: Modelo C4 (Contexto y Contenedores)](#3-vista-lógica-modelo-c4-contexto-y-contenedores)
+4. [Vista Estructural: Diseño de Clases y Clean Architecture](#4-vista-estructural-diseño-de-clases-y-clean-architecture)
+5. [Vista de Procesos: Comportamiento Dinámico](#5-vista-de-procesos-comportamiento-dinámico)
+6. [Vista de Despliegue e Infraestructura (Nivel 4)](#6-vista-de-despliegue-e-infraestructura-nivel-4)
+7. [Gestión de Datos y Persistencia](#7-gestión-de-datos-y-persistencia)
 
 <div style="page-break-after: always; visibility: hidden"></div>
 
-## 1. Introducción
+# 1. Introducción y Metas Arquitectónicas
 
-El presente **Informe de Arquitectura** documenta las decisiones de diseño estructural del sistema **RustGuard Antivirus**, una aplicación de escritorio construida con Electron.js y React 19 que integra el motor ClamAV. La arquitectura sigue un modelo de **dos procesos aislados** (Main y Renderer) comunicados exclusivamente por IPC, conforme al patrón de seguridad de Electron con `contextIsolation: true`.
+### 1.1 Propósito
+El presente Documento de Arquitectura de Software (SAD) define de forma exhaustiva las directrices estructurales, los patrones de diseño subyacentes y el modelo de despliegue de **RustGuard - Agente Antivirus y Self-Healing**. Su propósito es servir como una guía técnica vinculante para los equipos de ingeniería, asegurando que la implementación cumpla rigurosamente con los atributos de calidad definidos y la filosofía de **Clean Architecture** adoptada para el sistema.
+
+### 1.2 Restricciones Arquitectónicas
+* **Dependencia de ClamAV Daemon:** El análisis heurístico principal delega su ejecución algorítmica al binario `clamscan` de ClamAV, imponiendo una dependencia estricta del entorno local del Sistema Operativo anfitrión.
+* **Separación de Procesos (IPC):** El framework Electron exige una separación arquitectónica estricta entre el *Render Process* (React 19) y el *Main Process* (Node.js). Ningún módulo web puede acceder directamente al sistema de archivos local (`fs`), limitando las llamadas exclusivamente a través del puente criptográficamente seguro (`contextBridge`).
+* **Sistemas Operativos Soportados:** Dado que el orquestador backend depende de procesos nativos de administración (`child_process.spawn`), la plataforma de despliegue exige sistemas basados en distribuciones estándar Windows (NTFS) o Linux (Debian/Ubuntu/RedHat) con permisos elevados.
+
+### 1.3 Atributos de Calidad (Ilities)
+* **Seguridad (Security):** Garantizada a través del cifrado en reposo (AES-256) en la bóveda de cuarentena, y del principio de menor privilegio en las invocaciones IPC para prevenir inyecciones desde la UI hacia el motor de sistema (Tamper Protection).
+* **Rendimiento (Performance):** La arquitectura delega el costoso escaneo profundo a procesos en segundo plano de manera asíncrona, manteniendo el hilo de renderizado web a 60 FPS sin afectar la experiencia del usuario.
+* **Mantenibilidad (Maintainability):** Al aplicar *Clean Architecture*, la lógica del negocio (casos de uso de escaneo y restauración) se encuentra completamente agnóstica a los detalles de interfaz (React) y persistencia (SQLite/Archivos). Esto permite cambiar bibliotecas externas (ej. migrar SQLite a PostgreSQL) sin reescribir el núcleo del agente.
 
 ---
 
-## 2. Representación Arquitectónica - Modelo C4
+# 2. Vista de Casos de Uso (Interacciones Principales)
 
-### 2.1 Diagrama de Contexto (Nivel 1)
+### 2.1 Descripción de Actores y Casos Core
+La solución orquesta flujos asíncronos en los que intervienen diversos actores para garantizar un entorno *Zero-Trust*:
+1. **Administrador de Seguridad:** Realiza acciones directivas como auditorías y forzado de restauraciones (*Self-Healing*).
+2. **Usuario Local:** Interactúa visualmente para solicitar escaneos bajo demanda y revisar el estatus de salud del sistema.
+3. **FS Monitor (Sistema):** Actor pasivo que inyecta eventos de E/S del núcleo del sistema operativo.
 
-```mermaid
-C4Context
-    title Diagrama de Contexto - RustGuard Antivirus
-
-    Person(user, "Usuario Final", "Ejecuta escaneos y gestiona la seguridad de su equipo")
-
-    System(rg, "RustGuard Antivirus", "Aplicación de escritorio Electron que integra ClamAV para protección antimalware")
-
-    System_Ext(clamav, "ClamAV Engine", "Motor antivirus de firmas instalado en C:/Program Files/ClamAV")
-    System_Ext(clamdb, "database.clamav.net", "Servidor de actualización de firmas ClamAV")
-    System_Ext(winfs, "Windows File System", "Sistema de archivos del S.O.")
-
-    Rel(user, rg, "Interactúa mediante la UI")
-    Rel(rg, clamav, "Invoca clamdscan/clamd via child_process")
-    Rel(rg, clamdb, "Descarga firmas con freshclam", "HTTPS")
-    Rel(rg, winfs, "Lee/escribe archivos, monitorea cambios")
-```
-
-### 2.2 Diagrama de Contenedores (Nivel 2)
+### 2.2 Diagrama de Casos de Uso
 
 ```mermaid
-C4Container
-    title Diagrama de Contenedores - RustGuard Antivirus
+flowchart LR
+    Actor_Admin([Administrador TI])
+    Actor_User([Usuario Local])
+    Actor_System([Monitor FS / SO])
 
-    Person(user, "Usuario")
+    subgraph Agente Antivirus RustGuard
+        CU1(Escaneo Completo de Sistema)
+        CU2(Monitorización Activa / E/S)
+        CU3(Cuarentena de Archivos Infecciosos)
+        CU4(Restauración / Self-Healing)
+        CU5(Auditoría y Consulta de Logs)
+    end
 
-    System_Boundary(rg, "RustGuard Antivirus") {
-        Container(renderer, "Proceso Renderer", "React 19 + TailwindCSS", "UI premium con Dashboard, Escaneo, Tiempo Real, Cuarentena e Historial")
-        Container(main, "Proceso Main", "Node.js (Electron)", "Orquesta IPC, gestiona ClamAV, SQLite, Watcher y Honeypots")
-        Container(preload, "Preload Bridge", "CommonJS", "contextBridge que expone APIs seguras al Renderer")
-        ContainerDb(sqlite, "SQLite DB", "better-sqlite3", "Almacena scan_history y quarantine (WAL mode)")
-        Container(logs, "Sistema de Logs", "File System", "Archivos .log por sesión en userData/logs/")
-    }
+    Actor_User --> CU1
+    Actor_User --> CU5
+    
+    Actor_Admin --> CU1
+    Actor_Admin --> CU3
+    Actor_Admin --> CU4
+    Actor_Admin --> CU5
 
-    System_Ext(clamd, "clamd Daemon", "Motor ClamAV en memoria")
-    System_Ext(freshclam, "freshclam", "Actualizador de firmas")
-
-    Rel(user, renderer, "Interactúa", "Electron UI")
-    Rel(renderer, preload, "Invoca APIs", "contextBridge")
-    Rel(preload, main, "Comunicación", "ipcRenderer ↔ ipcMain")
-    Rel(main, clamd, "Escanea archivos", "child_process.spawn")
-    Rel(main, freshclam, "Actualiza firmas", "child_process.spawn")
-    Rel(main, sqlite, "CRUD", "better-sqlite3")
-    Rel(main, logs, "Escribe logs", "fs.createWriteStream")
+    Actor_System --> CU2
+    CU2 -.->|Detecta creación| CU1
+    CU1 -.->|Si infectado| CU3
 ```
 
-### 2.3 Diagrama de Componentes (Nivel 3)
+---
+
+# 3. Vista Lógica: Modelo C4 (Contexto y Contenedores)
+
+### 3.1 Nivel 1: Diagrama de Contexto del Sistema
+
+```mermaid
+graph TD
+    User([Usuario del Sistema])
+    Admin([Administrador de TI])
+    
+    System(RustGuard Antivirus Agent)
+    
+    ClamAV_DB[(ClamAV Virus Definitions Cloud)]
+    OS_FS[(Sistema de Archivos del SO)]
+
+    User -->|Consulta estado y ejecuta análisis| System
+    Admin -->|Gestiona cuarentena y auditoría| System
+    
+    System -->|Descarga firmas actualizadas| ClamAV_DB
+    System -->|Lee/escribe y cifra bloques| OS_FS
+```
+
+**Descripción del Nivel 1:**
+El Agente RustGuard actúa como el punto focal de seguridad en el *endpoint*. Los usuarios interactúan con él para validar archivos locales. El agente se comunica externamente con servidores remotos de firmas (ClamAV Cloud) para actualizar heurísticas, y se integra a un nivel muy profundo (Kernel level / I/O level) con el Sistema de Archivos local para ejecutar la inspección e implementación del *Self-Healing* de los activos de la organización.
+
+### 3.2 Nivel 2: Diagrama de Contenedores
 
 ```mermaid
 graph TB
-    subgraph MainProcess["Proceso Main (electron/)"]
-        main_js["main.js<br/><i>IPC Hub - 30+ handlers</i>"]
-        clamav_js["clamav.js<br/><i>Motor de Escaneo</i>"]
-        clamd_svc["clamd_service.js<br/><i>Gestión del Daemon</i>"]
-        config_gen["config_generator.js<br/><i>Genera clamd.conf</i>"]
-        watcher_js["watcher.js<br/><i>Protección Tiempo Real</i>"]
-        honeypot_js["honeypot.js<br/><i>Anti-Ransomware</i>"]
-        quarantine_js["quarantine.js<br/><i>Gestión Cuarentena</i>"]
-        db_js["db.js<br/><i>SQLite WAL</i>"]
-        logger_js["logger.js<br/><i>Logging por Sesión</i>"]
-        paths_js["paths.js<br/><i>Rutas userData</i>"]
-        preload["preload.cjs<br/><i>IPC Bridge</i>"]
+    User([Usuario del Sistema])
+
+    subgraph RustGuard Desktop App
+        UI[GUI Application Container<br/>React 19, TailwindCSS]
+        
+        IPC_Bus[IPC Bridge<br/>ContextBridge / Serialización JSON]
+        
+        Core[Core Logic Container<br/>Node.js / Clean Architecture]
+        
+        LocalDB[(Embedded Database<br/>SQLite3 / JSON Store)]
+        Vault[(Quarantine Vault<br/>Cifrado AES-256)]
     end
 
-    subgraph RendererProcess["Proceso Renderer (src/)"]
-        app["App.jsx<br/><i>Router de Vistas</i>"]
-        dashboard["Dashboard.jsx"]
-        scan["Scan.jsx"]
-        realtime["RealTime.jsx"]
-        quarantine_page["Quarantine.jsx"]
-        history["History.jsx"]
-        layout["Layout.jsx"]
-        sidebar["Sidebar.jsx"]
-        titlebar["Titlebar.jsx"]
-        logviewer["LogViewer.jsx"]
-        threatmodal["ThreatModal.jsx"]
-        ransomwaremodal["RansomwareAlertModal.jsx"]
-    end
+    ClamAV[ClamAV Daemon<br/>Binario Nativo C/C++]
 
-    main_js --> clamav_js
-    main_js --> clamd_svc
-    main_js --> config_gen
-    main_js --> watcher_js
-    main_js --> honeypot_js
-    main_js --> quarantine_js
-    main_js --> db_js
-
-    clamav_js --> logger_js
-    clamav_js --> db_js
-    clamav_js --> paths_js
-    watcher_js --> clamav_js
-    quarantine_js --> db_js
-    db_js --> paths_js
-    logger_js --> paths_js
-    clamd_svc --> paths_js
-
-    app --> layout
-    app --> ransomwaremodal
-    layout --> sidebar
-    layout --> titlebar
-    scan --> logviewer
-    scan --> threatmodal
-
-    preload -.->|contextBridge| app
+    User -->|Interactúa (Clics/Rutas)| UI
+    UI <-->|Promesas Asíncronas| IPC_Bus
+    IPC_Bus <-->|Comandos| Core
+    
+    Core -->|Registra telemetría| LocalDB
+    Core -->|Cifra y mueve binarios| Vault
+    Core <-->|Spawnea procesos OS| ClamAV
 ```
 
-### 2.4 Diagrama de Clases (Nivel Lógico)
+**Descripción del Nivel 2:**
+El sistema está fraccionado en contenedores lógicos dentro del mismo ecosistema Electron. La **GUI (React)** no tiene conocimiento del sistema; simplemente dibuja estados. El **Core Logic (Node.js)** representa el núcleo y ejecuta los casos de uso. Delega la persistencia de los archivos cifrados al contenedor de **Vault**, y la búsqueda de firmas malignas al **Demonio ClamAV** nativo del sistema. La comunicación inter-contenedor de la UI al Core se realiza por medio del canal **IPC Bridge**.
 
-Aunque la aplicación está desarrollada en JavaScript (utilizando módulos de Node.js y componentes funcionales de React), el siguiente diagrama modela las entidades lógicas como **clases o servicios** para representar sus responsabilidades y relaciones en el Backend (Proceso Main).
+---
+
+# 4. Vista Estructural: Diseño de Clases y Clean Architecture
+
+### 4.1 Diagrama de Clases del Dominio y Casos de Uso
+El siguiente diagrama detalla la aplicación estricta de *Clean Architecture*, evidenciando cómo el núcleo de la aplicación (Entidades y Casos de Uso) no depende de ningún *framework* externo.
 
 ```mermaid
 classDiagram
-    class ClamAVService {
-        +quickScan() Promise
-        +fullScan() Promise
-        +customScan(paths: string[]) Promise
-        +stopScan() void
-        -generateScanList(targets) void
+    %% Entities
+    class ScanResult {
+        +String filePath
+        +Boolean isInfected
+        +String signatureName
+        +Date scannedAt
+        +isValid() Boolean
     }
 
-    class DatabaseService {
-        +insertScanStart(type: string, logFile: string) int
-        +updateScanFinish(id: int, files: int, threats: int, status: string) void
-        +getHistory() array
-        +addToQuarantine(originalPath: string, quarPath: string, threat: string) void
-        +getQuarantine() array
+    class QuarantineItem {
+        +String id
+        +String originalPath
+        +String cipheredHash
+        +String decryptionKey
+        +encryptBuffer(Buffer raw) Buffer
+        +decryptBuffer(Buffer encrypted) Buffer
     }
 
-    class QuarantineManager {
-        +quarantineFile(filePath: string, threatName: string) Promise
-        +restoreFile(id: int) Promise
-        +deleteFile(id: int) Promise
+    %% Interfaces (Gateways / Repositories)
+    class IScannerEngine {
+        <<interface>>
+        +scanFile(String path) ScanResult
+        +updateSignatures() Boolean
     }
 
-    class HoneypotManager {
-        +startAntiRansomware() void
-        +stopAntiRansomware() void
-        -deployCanaries() void
-        -handleDetection(path: string) void
+    class IQuarantineRepository {
+        <<interface>>
+        +saveItem(QuarantineItem item) void
+        +getItemById(String id) QuarantineItem
     }
 
-    class WatcherService {
-        +startRealTime() void
-        +stopRealTime() void
-        -processQueue() void
+    %% Use Cases (Interactors)
+    class ProcessFileScanUseCase {
+        -IScannerEngine scanner
+        -IQuarantineRepository quarantineRepo
+        +execute(String path) void
     }
 
-    class Logger {
-        +initSession(prefix: string) string
-        +log(level: string, message: string) void
+    class HealFileUseCase {
+        -IQuarantineRepository quarantineRepo
+        +restoreOriginal(String id) Boolean
     }
 
-    class ClamdDaemon {
-        +startDaemon() Promise
-        +stopDaemon() void
-        +checkStatus() boolean
-    }
-
-    %% Relaciones
-    ClamAVService --> DatabaseService : registra scans
-    ClamAVService --> Logger : escribe logs
-    WatcherService --> ClamAVService : solicita escaneos
-    QuarantineManager --> DatabaseService : guarda metadatos
-    QuarantineManager --> Logger : escribe eventos
-    HoneypotManager --> Logger : alerta crítica
-    main_js ..> ClamAVService : invoca
-    main_js ..> QuarantineManager : invoca
-    main_js ..> WatcherService : invoca
-    main_js ..> HoneypotManager : invoca
-    main_js ..> ClamdDaemon : orquesta
+    %% Dependencies and Implementations
+    ProcessFileScanUseCase --> IScannerEngine
+    ProcessFileScanUseCase --> IQuarantineRepository
+    ProcessFileScanUseCase ..> ScanResult : "Creates"
+    ProcessFileScanUseCase ..> QuarantineItem : "Creates on infection"
+    
+    HealFileUseCase --> IQuarantineRepository
 ```
+
+### 4.2 Mapeo de Capas
+El proyecto estructura sus directorios bajo el paradigma de cebolla (*Onion Architecture*):
+* **`src/domain/` (Entidades):** Contiene los modelos base (`ScanResult.ts`, `QuarantineItem.ts`). Cero dependencias (librerías externas prohibidas).
+* **`src/use-cases/` (Interactors):** Contiene la orquestación del flujo de negocio. Inyecta dependencias a través de constructores (Inversión de Control).
+* **`src/interfaces/` (Gateways):** Contiene los adaptadores que conectan el dominio con el mundo exterior (`ClamAVScannerAdapter.ts`, `SQLiteQuarantineRepo.ts`).
+* **`src/infrastructure/` (Frameworks):** Código específico de Electron (Main process, IPC handlers) y React (Componentes UI). 
 
 ---
 
-## 3. Vista de Procesos
+# 5. Vista de Procesos: Comportamiento Dinámico
 
-### 3.1 Secuencia de Arranque
+### 5.1 Diagrama de Secuencia de un Flujo Crítico
+El siguiente diagrama ilustra el flujo crítico asíncrono de **Detección de infección y reparación automática (Cuarentena y Self-Healing preventivo)**.
 
 ```mermaid
 sequenceDiagram
-    participant U as Usuario
-    participant E as Electron (Main)
-    participant S as Splash Screen
-    participant CG as config_generator
-    participant FC as freshclam
-    participant CD as clamd
-    participant W as BrowserWindow
+    participant UI as React UI (Render)
+    participant IPC as Electron IPC
+    participant UC as ProcessFileScan (Use Case)
+    participant Adapter as ClamAV Adapter
+    participant OS as Sistema Operativo
+    participant Vault as Gestor Cuarentena
 
-    U->>E: Abre RustGuard.exe
-    E->>CG: generateClamAVConfigs()
-    E->>S: Muestra splash.html
-    S-->>U: "Cargando..."
-    E->>FC: spawn freshclam (actualizar firmas)
-    FC-->>E: Firmas actualizadas (o warning)
-    S-->>U: "Actualizando firmas ClamAV..."
-    E->>CD: spawn clamd --config-file
-    CD-->>E: Motor listo (o timeout 15s)
-    S-->>U: "Cargando Motor Antivirus..."
-    E->>W: createWindow() (ventana principal)
-    E->>S: splash.close()
-    W-->>U: Dashboard visible
-```
-
-### 3.2 Secuencia de Escaneo
-
-```mermaid
-sequenceDiagram
-    participant U as Usuario (Renderer)
-    participant P as Preload (IPC)
-    participant M as main.js
-    participant C as clamav.js
-    participant DB as db.js
-    participant L as logger.js
-    participant CL as clamdscan.exe
-
-    U->>P: scanQuick()
-    P->>M: ipcMain.handle('scan-quick')
-    M->>C: quickScan()
-    C->>L: initSessionLog()
-    C->>DB: insertScanStart('quick', logFile)
-    C->>C: generateScanList(targets)
-    C->>CL: spawn clamdscan -f lista.txt
-    loop Por cada línea stdout
-        CL-->>C: "archivo: OK" o "archivo: Threat FOUND"
-        C->>C: parseClamScanLine(line)
-        C->>L: writeLog(level, line)
-        L-->>U: IPC 'log-message'
+    UI->>IPC: ipcRenderer.invoke('scan-request', '/opt/app/binary.exe')
+    IPC->>UC: execute('/opt/app/binary.exe')
+    
+    UC->>Adapter: scanFile('/opt/app/binary.exe')
+    Adapter->>OS: spawn('clamscan', ['/opt/app/binary.exe'])
+    OS-->>Adapter: stdout: "Win.Trojan.Ransom FOUND"
+    Adapter-->>UC: return ScanResult(Infected=true)
+    
+    alt Infección Encontrada
+        UC->>Vault: saveItem(new QuarantineItem)
+        Vault->>OS: fs.readFile('/opt/app/binary.exe')
+        OS-->>Vault: Stream Binario
+        Vault->>Vault: Cifra stream (AES-256)
+        Vault->>OS: fs.writeFile('/var/vault/uuid.enc', Cifrado)
+        Vault->>OS: fs.unlinkSync('/opt/app/binary.exe')
+        Vault-->>UC: return success
+        UC-->>IPC: result(Quarantined, "Win.Trojan.Ransom")
+        IPC-->>UI: resolvePromise(state: "Threat Neutralized")
+    else Archivo Limpio
+        UC-->>IPC: result(Clean)
+        IPC-->>UI: resolvePromise(state: "Safe")
     end
-    CL-->>C: process.close(code)
-    C->>DB: updateScanFinish(id, files, threats, 'completed')
-    C-->>M: {scannedFiles, threatsFound, threats[]}
-    M-->>P: resultado
-    P-->>U: Muestra resumen
-```
-
-### 3.3 Secuencia Anti-Ransomware
-
-```mermaid
-sequenceDiagram
-    participant U as Usuario
-    participant M as main.js
-    participant H as honeypot.js
-    participant FS as File System
-    participant CK as chokidar
-    participant W as BrowserWindow
-
-    U->>M: toggleAntiransomware(true)
-    M->>H: startAntiRansomware()
-    H->>FS: writeFileSync('.rg_canary.docx')
-    H->>FS: exec('attrib +h canary')
-    H->>CK: watch(honeypots, {ignoreInitial:true})
-
-    Note over CK,FS: Ransomware modifica el honeypot
-    FS-->>CK: evento 'change'
-    CK->>H: handleRansomwareDetection(path)
-    H->>W: win.restore() + maximize() + setAlwaysOnTop(true)
-    H->>W: send('ransomware-alert', {filePath, time})
-    W-->>U: Modal ALERTA CRÍTICA pantalla completa
 ```
 
 ---
 
-## 4. Vista de Despliegue
+# 6. Vista de Despliegue e Infraestructura (Nivel 4)
+
+### 6.1 Diagrama de Despliegue
 
 ```mermaid
-graph TB
-    subgraph PC["🖥️ Máquina del Usuario (Windows x64)"]
-        subgraph ElectronApp["RustGuard.exe (Electron 31)"]
-            MainProc["Proceso Main (Node.js)"]
-            RendererProc["Proceso Renderer (Chromium)"]
+graph TD
+    subgraph Workstation / Servidor On-Premise (Linux/Windows)
+        subgraph Electron Runtime Env
+            AppBinary[RustGuard.exe / .AppImage]
         end
-
-        subgraph ClamAVInstall["C:/Program Files/ClamAV/"]
-            clamd_exe["clamd.exe (Daemon)"]
-            clamdscan_exe["clamdscan.exe (Scanner)"]
-            freshclam_exe["freshclam.exe (Updater)"]
+        
+        subgraph System Daemons
+            ClamAV_Service[Demonio ClamAV Service<br/>Port: TCP 3310 (opcional)]
         end
-
-        subgraph UserData["AppData/Roaming/RustGuard/"]
-            db_file["db/rustguard.db"]
-            logs_dir["logs/*.log"]
-            quar_dir["quarantine/*.quar"]
-            clamdb["clamav_db/*.cvd"]
-            conf1["clamd.conf"]
-            conf2["freshclam.conf"]
+        
+        subgraph Filesystem
+            Logs[/var/log/rustguard/]
+            VaultVol[/var/opt/rustguard/vault/]
         end
+        
+        AppBinary -->|Spawns / Local socket| ClamAV_Service
+        AppBinary -->|Escribe logs| Logs
+        AppBinary -->|Mueve y cifra| VaultVol
     end
 
-    subgraph Cloud["☁️ Internet"]
-        ClamDBServer["database.clamav.net"]
+    subgraph Cloud Infrastructure (AWS - Terraform)
+        CI_CD[GitHub Actions Runner]
+        TelemetryDB[(AWS DynamoDB / RDS<br/>Futura Telemetría)]
     end
 
-    MainProc --> clamd_exe
-    MainProc --> clamdscan_exe
-    MainProc --> freshclam_exe
-    MainProc --> db_file
-    MainProc --> logs_dir
-    MainProc --> quar_dir
-    freshclam_exe --> ClamDBServer
+    CI_CD -.->|Despliega binarios firmados| Workstation
+    AppBinary -.->|HTTPS / TLS 1.3| TelemetryDB
 ```
 
----
-
-## 5. Vista de Datos
-
-```mermaid
-erDiagram
-    scan_history {
-        INTEGER id PK "AUTO INCREMENT"
-        TEXT scan_type "quick | full | file"
-        DATETIME started_at "NOT NULL"
-        DATETIME finished_at "NULLABLE"
-        INTEGER files_scanned "DEFAULT 0"
-        INTEGER threats_found "DEFAULT 0"
-        TEXT log_file "Ruta al archivo .log"
-        TEXT status "running | completed | cancelled | error"
-    }
-
-    quarantine {
-        INTEGER id PK "AUTO INCREMENT"
-        TEXT original_path "NOT NULL"
-        TEXT quarantine_path "NOT NULL"
-        TEXT threat_name "NULLABLE"
-        DATETIME quarantined_at "NOT NULL"
-        BOOLEAN restored "DEFAULT 0"
-    }
-```
+### 6.2 Especificaciones de Infraestructura
+* **Servidores On-Premise/Workstations:** Requieren un mínimo de 2 vCPUs y 4 GB de RAM. Debe haber un binario nativo (compilado en C) de ClamAV configurado y disponible en el `PATH` del sistema.
+* **Sistema de Archivos y Permisos:** El ejecutable del Agente RustGuard (Electron Main Process) debe operar bajo un nivel de privilegios *root* en Linux o *Administrador* en Windows, permitiéndole interceptar operaciones E/S en los puntos de montaje nativos (Samba/NFS) para el monitoreo activo.
+* **Redes y Protocolos:** Todo egreso de información de telemetría (futura) operará por el puerto TCP 443 (HTTPS), con cifrado TLS 1.3.
 
 ---
 
-## 6. Restricciones de Diseño
+# 7. Gestión de Datos y Persistencia
 
-| Restricción | Justificación |
-| :--- | :--- |
-| **Context Isolation obligatorio** | `contextIsolation: true` + `nodeIntegration: false` para prevenir ataques XSS en el Renderer. |
-| **Comunicación exclusiva por IPC** | Todo acceso a Node.js APIs pasa por `preload.cjs` → `contextBridge.exposeInMainWorld()`. |
-| **Spawn asíncrono para ClamAV** | `child_process.spawn()` evita bloquear el event loop de Node.js durante escaneos largos. |
-| **SQLite WAL mode** | Garantiza integridad de datos ante cierres inesperados de la aplicación. |
-| **Directorios en userData** | Todos los datos persistentes (DB, logs, cuarentena, firmas) residen en `app.getPath('userData')` para portabilidad. |
+La arquitectura requiere una persistencia dual extremadamente robusta para manejar la auditoría de seguridad y el salvamento de archivos:
 
----
-
-## 7. Patrones Arquitectónicos
-
-| Patrón | Aplicación en RustGuard |
-| :--- | :--- |
-| **Broker (IPC Broker)** | `main.js` actúa como broker central que recibe mensajes IPC del Renderer y los despacha a los módulos apropiados (clamav, quarantine, watcher, honeypot). |
-| **Observer** | `chokidar` implementa el patrón Observer para monitorear cambios en el file system. `BrowserWindow.webContents.send()` implementa pub/sub para notificar al Renderer. |
-| **Queue (Cola)** | `watcher.js` encola archivos detectados y los procesa secuencialmente (`processQueue()`) para evitar saturar ClamAV con múltiples escaneos simultáneos. |
-| **Façade** | `preload.cjs` actúa como fachada que abstrae 30+ llamadas IPC en una API limpia (`window.electronAPI`). |
-| **Fail-Safe** | Si ClamAV no está instalado, el sistema no crashea; retorna resultado vacío y registra el error. Si clamd no responde, el timeout de 15s resuelve la promesa como fallback. |
-| **Repository** | `db.js` centraliza todas las operaciones CRUD de SQLite, exponiendo funciones puras (`insertScanStart`, `updateScanFinish`, etc.) sin exponer el objeto `db` directamente. |
-
----
-
-## 8. Decisiones Arquitectónicas
-
-| ID | Decisión | Alternativas Evaluadas | Justificación |
-| :---: | :--- | :--- | :--- |
-| AD-01 | Usar `clamdscan` (daemon) en lugar de `clamscan` (standalone) | clamscan recarga firmas en cada ejecución (~15s de startup) | clamdscan se conecta al daemon que ya tiene las firmas en RAM, reduciendo el tiempo de escaneo por archivo a milisegundos. |
-| AD-02 | Generar lista de archivos antes de invocar clamdscan (`-f flag`) | Pasar directorio directamente a clamdscan | Permite cancelación granular durante la fase de recopilación y evita que clamdscan aborte por archivos inaccesibles. |
-| AD-03 | Usar `better-sqlite3` sincrónico en lugar de un ORM async | Sequelize, TypeORM, knex | SQLite es single-threaded por naturaleza. `better-sqlite3` es el driver más rápido para Node.js y el modo sincrónico simplifica la lógica de transacciones sin overhead de promesas. |
-| AD-04 | Ventana Frameless con Titlebar personalizado | Frame nativo del S.O. | Permite un diseño visual consistente con el tema oscuro premium y controles de ventana integrados en la marca RustGuard. |
-| AD-05 | Honeypots con `chokidar` en lugar de Windows API (`ReadDirectoryChangesW`) | API nativa de Windows | `chokidar` es cross-platform y ya es dependencia del proyecto para el módulo de Tiempo Real, evitando duplicar la lógica de file watching. |
-
----
-
-## Bibliografía
-
-1. Richards, M., & Ford, N. (2020). *Fundamentals of Software Architecture*. O'Reilly Media.
-2. Brown, S. (2021). *The C4 Model for Visualising Software Architecture*. Recuperado de https://c4model.com/
-3. Electron. (2025). *Process Model*. Recuperado de https://www.electronjs.org/docs/latest/tutorial/process-model
-4. SQLite. (2025). *Write-Ahead Logging*. Recuperado de https://www.sqlite.org/wal.html
+1. **Gestión de Cuarentena (Blobs Cifrados):** 
+   Los archivos maliciosos no se borran; se almacenan como binarios ofuscados (`*.enc`) en un subdirectorio aislado del host (`/var/opt/rustguard/vault/`). Se utiliza el algoritmo de clave simétrica estandarizado **AES-256-CBC**, derivando la clave criptográficamente a partir de las credenciales del sistema operativo mediante el módulo nativo `crypto` de Node.
+2. **Registro Relacional de Eventos (Metadatos):** 
+   Los metadatos correspondientes (hash SHA-256 original, fecha de infección, nombre de la firma) se persisten en una base de datos local empaquetada (SQLite 3), lo que asegura transaccionalidad ACID y soporte avanzado para consultas a través del Panel de Control de la UI.
+3. **Manejo de Concurrencia:** 
+   El agente implementa un mecanismo de bloqueo tipo *Mutex* a nivel de archivo durante la cuarentena para prevenir *Race Conditions*, donde el sistema operativo intente modificar o ejecutar el archivo malicioso simultáneamente mientras RustGuard lo está cifrando para su traslado.

@@ -38,162 +38,94 @@ Versión *2.0*
 |:---:|:---|:---|:---|:---|
 | Versión | Hecha por | Revisada por | Aprobada por | Fecha | Motivo |
 | 1.0 | Sierra Ruiz, Iker Alberto | LLica Mamani, Jimmy Mijair | Sierra Ruiz, Iker Alberto | 02/06/2026 | Versión Inicial |
-| 2.0 | Equipo RustGuard | Mag. Patrick Cuadros Quiroga | Equipo RustGuard | 04/07/2026 | Integración de la Suite Desktop |
+| 2.0 | Equipo RustGuard | Mag. Patrick Cuadros Quiroga | Equipo RustGuard | 04/07/2026 | Integración de la Suite Omnicanal |
 
 <div style="page-break-after: always; visibility: hidden"></div>
 
 # **INDICE GENERAL**
 
-[1. Introducción](#1-introducción)
-
-[2. Posicionamiento](#2-posicionamiento)
-
-&nbsp;&nbsp;[2.1 Oportunidad de Negocio](#21-oportunidad-de-negocio)
-
-&nbsp;&nbsp;[2.2 Declaración del Problema](#22-declaración-del-problema)
-
-&nbsp;&nbsp;[2.3 Declaración de Posicionamiento](#23-declaración-de-posicionamiento)
-
-[3. Descripciones de los Interesados y Usuarios](#3-descripciones-de-los-interesados-y-usuarios)
-
-&nbsp;&nbsp;[3.1 Resumen de los Interesados](#31-resumen-de-los-interesados)
-
-&nbsp;&nbsp;[3.2 Perfiles de Usuario](#32-perfiles-de-usuario)
-
-&nbsp;&nbsp;[3.3 Entorno del Usuario](#33-entorno-del-usuario)
-
-[4. Vista General del Producto](#4-vista-general-del-producto)
-
-&nbsp;&nbsp;[4.1 Perspectiva del Producto](#41-perspectiva-del-producto)
-
-&nbsp;&nbsp;[4.2 Capacidades del Producto](#42-capacidades-del-producto)
-
-[5. Restricciones](#5-restricciones)
-
-&nbsp;&nbsp;[5.1 Restricciones Técnicas](#51-restricciones-técnicas)
-
-&nbsp;&nbsp;[5.2 Restricciones de Plataforma](#52-restricciones-de-plataforma)
-
-[6. Rangos de Calidad](#6-rangos-de-calidad)
+1. [Introducción](#1-introducción)
+2. [Posicionamiento](#2-posicionamiento)
+3. [Descripciones de los Interesados y Usuarios](#3-descripciones-de-los-interesados-y-usuarios)
+4. [Descripción Global del Producto](#4-descripción-global-del-producto)
+5. [Características del Producto](#5-características-del-producto)
+6. [Restricciones y Requisitos No Funcionales](#6-restricciones-y-requisitos-no-funcionales)
 
 <div style="page-break-after: always; visibility: hidden"></div>
 
 ## 1. Introducción
 
-El **Informe de Visión de Producto** define las bases conceptuales, el mercado objetivo, los perfiles de usuario y las metas estratégicas a gran escala de **RustGuard Antivirus**. Este documento sirve como punto de referencia fundamental para alinear las decisiones de diseño, desarrollo y calidad del equipo, asegurando que cada componente del sistema contribuya hacia un objetivo común: ofrecer una solución antivirus de escritorio gratuita, profesional y de alto rendimiento que democratice el acceso a la ciberseguridad.
+### Propósito
+El propósito de este Documento de Visión es proporcionar una perspectiva integral de alto nivel sobre el producto **RustGuard - Antivirus System**. Define el marco conceptual, los objetivos estratégicos, las necesidades del mercado y las características principales del sistema, alineando las expectativas técnicas y de negocio para todos los stakeholders, desde el equipo de desarrollo hasta la junta directiva.
 
----
+### Alcance
+RustGuard es una solución de seguridad de punto final (Endpoint Security) diseñada para ejecutarse como una aplicación de escritorio. Proporciona protección en tiempo real, análisis heurísticos y basados en firmas, y gestión de cuarentena mediante una interfaz gráfica moderna (React/Electron). El producto abarca tanto el agente local instalado en los equipos de los usuarios como la infraestructura de soporte orquestada automáticamente en AWS mediante Terraform.
+
+### Definiciones, Acrónimos y Abreviaturas
+* **ClamAV:** Motor antivirus de código abierto utilizado para la detección de troyanos, virus y otros programas maliciosos.
+* **Electron:** Framework que permite el desarrollo de aplicaciones de escritorio multiplataforma utilizando tecnologías web (HTML, CSS, JavaScript).
+* **CI/CD:** Integración Continua y Despliegue Continuo, prácticas de DevOps para automatizar las pruebas y la entrega de software.
+* **Quarantine (Cuarentena):** Entorno de aislamiento seguro donde los archivos sospechosos son almacenados cifrados para evitar la propagación de malware.
+* **SARIF:** Static Analysis Results Interchange Format, formato estándar para la salida de herramientas de análisis estático.
 
 ## 2. Posicionamiento
 
-### 2.1 Oportunidad de Negocio
+### Oportunidad de Negocio / Operativa
+El mercado actual de software antivirus está saturado de soluciones monolíticas, consumidoras intensivas de recursos y con interfaces de usuario obsoletas. Existe una oportunidad emergente para soluciones ligeras, transparentes y construidas con stacks tecnológicos modernos que faciliten la integración con flujos de trabajo de DevOps, al tiempo que ofrecen a los usuarios finales una experiencia fluida e intuitiva sin sacrificar las capacidades de detección de grado empresarial.
 
-Con el crecimiento exponencial del malware (más de 560,000 nuevas muestras detectadas diariamente según AV-TEST Institute), la necesidad de soluciones antivirus accesibles se ha vuelto crítica. El mercado actual presenta un vacío significativo: **no existe una aplicación de escritorio con interfaz gráfica moderna** que combine un motor antivirus de firmas (ClamAV), detección heurística de ransomware, monitoreo en tiempo real y una experiencia de usuario comparable a los productos comerciales, todo ello de forma gratuita y de código abierto.
+### Declaración del Problema
+El problema de **la alta latencia, consumo excesivo de recursos e interfaces no intuitivas en el software antivirus tradicional** afecta a **los usuarios finales corporativos y administradores de sistemas**. El impacto de esto es **una degradación en el rendimiento de las estaciones de trabajo, desactivación deliberada de la seguridad por parte de los usuarios y un aumento en la vulnerabilidad ante ciberataques (ej. ransomware, troyanos)**. Una solución exitosa sería **implementar un sistema antivirus de arquitectura modular y ligera, con un frontend optimizado que delegue eficientemente los procesos pesados, garantizando seguridad continua y mínima intrusión operativa**.
 
-Los usuarios afectados incluyen:
-- **Estudiantes y académicos** que no pueden costear licencias de antivirus comerciales.
-- **Pequeñas empresas y startups** que requieren protección básica sin overhead de licenciamiento.
-- **Desarrolladores** que desean una herramienta transparente, auditable y extensible.
+### Declaración de Posicionamiento del Producto
+Para **organizaciones y usuarios profesionales** que **requieren protección constante en sus equipos sin comprometer el rendimiento**, el **RustGuard - Antivirus System** es una **solución de seguridad de escritorio moderna** que **integra motores de escaneo probados con una interfaz de usuario web-native de alta velocidad**. A diferencia de **los antivirus heredados (legacy) y suites de seguridad monolíticas**, nuestro producto **aprovecha tecnologías como Electron y React junto a una estricta automatización DevSecOps para ofrecer escaneos rápidos, gestión ágil de cuarentena y reportes precisos con una huella de sistema optimizada**.
 
-### 2.2 Declaración del Problema
+## 3. Descripciones de los Interesados (Stakeholders) y Usuarios
 
-| Elemento | Descripción |
-| :--- | :--- |
-| **El problema de** | La falta de soluciones antivirus gratuitas con interfaz gráfica profesional, protección en tiempo real y detección heurística de ransomware. |
-| **Afecta a** | Usuarios de Windows que buscan protección integral sin costos de licenciamiento. |
-| **El impacto del cual es** | Sistemas vulnerables a malware, ransomware y archivos maliciosos descargados de Internet, con pérdida potencial de datos personales y profesionales. |
-| **Una solución exitosa sería** | Una aplicación de escritorio portable que integre escaneo por firmas (ClamAV), monitoreo automático del file system, honeypots anti-ransomware y una UI premium, todo empaquetado en un solo ejecutable sin dependencias externas complejas. |
+### Resumen de Stakeholders
 
-### 2.3 Declaración de Posicionamiento
-
-Para **usuarios de Windows que requieren seguridad ágil, gratuita y profesional**, **RustGuard Antivirus** es una **aplicación de escritorio basada en Electron** que provee **escaneo antivirus por firmas (ClamAV), protección en tiempo real, detección heurística de ransomware y gestión de cuarentena** con una interfaz premium de tema oscuro. A diferencia de **los antivirus comerciales** (Norton, Kaspersky, ESET), RustGuard es **100% gratuito, de código abierto, ligero y portable**, permitiendo al usuario ejecutar escaneos completos del sistema sin suscripciones, con un historial auditable y exportable de todas las operaciones realizadas.
-
----
-
-## 3. Descripciones de los Interesados y Usuarios
-
-### 3.1 Resumen de los Interesados
-
-| Nombre | Descripción | Responsabilidades |
+| Nombre | Representa a | Rol en el proyecto |
 | :--- | :--- | :--- |
-| Equipo de Desarrollo (RustGuard) | Estudiantes de Ingeniería de Sistemas de la UPT | Diseño, implementación, pruebas y documentación del sistema completo. |
-| Docente (Mag. Patrick Cuadros Quiroga) | Profesor del curso de Calidad y Pruebas de Software | Supervisión académica, revisión de entregas y evaluación de la calidad del producto. |
-| Usuarios Finales | Usuarios de Windows con necesidades de protección antimalware | Utilización del producto para escanear, monitorear y proteger sus sistemas. |
+| **Usuario Final / Empleado** | Fuerzas de trabajo operativas | Utiliza la aplicación pasiva y activamente para escanear sus archivos descargados y medios extraíbles. |
+| **Ingeniero de DevOps / Infraestructura** | Equipo Técnico de TI | Despliega los pipelines de CI/CD, monitorea la infraestructura aprovisionada por Terraform y gestiona los releases. |
+| **Arquitecto de Seguridad** | Departamento de Ciberseguridad | Define las políticas de escaneo, audita los reportes de Semgrep/Snyk y verifica la efectividad de las firmas de ClamAV. |
+| **Product Owner** | Negocio y Dirección | Prioriza el backlog de características y asegura que la interfaz y funcionalidades cumplan los objetivos estratégicos. |
 
-### 3.2 Perfiles de Usuario
+### Entorno de Usuario
+Los usuarios finales interactuarán con el sistema primordialmente en sistemas operativos de escritorio (Windows, macOS, distribuciones Linux) durante sus actividades laborales cotidianas. El entorno requiere que la interfaz de RustGuard sea no intrusiva y opere mayormente en la bandeja del sistema (System Tray), notificando únicamente incidentes críticos. Por otro lado, los ingenieros de DevOps y seguridad interactuarán con repositorios (GitHub) e infraestructuras en la nube (AWS) a través de terminales y consolas web para la monitorización de la salud del ciclo de vida del software.
 
-| Perfil | Nivel Técnico | Necesidades Principales | Interacción con el Sistema |
-| :--- | :---: | :--- | :--- |
-| **Usuario Doméstico** | Básico | Proteger su equipo de malware descargado de Internet sin configuración técnica. | Ejecuta escaneos rápidos y activa la protección en tiempo real desde el Dashboard. |
-| **Estudiante / Investigador** | Intermedio | Analizar archivos sospechosos descargados de repositorios académicos o forums. | Utiliza escaneo personalizado por carpeta y revisa los logs técnicos detallados. |
-| **Administrador de Sistemas** | Avanzado | Auditar la seguridad de estaciones de trabajo, exportar reportes y validar archivos. | Emplea el historial exportable, revisa logs de sesión y gestiona la cuarentena manualmente. |
+## 4. Descripción Global del Producto
 
-### 3.3 Entorno del Usuario
+### Perspectiva del Producto
+RustGuard se concibe como un agente de *endpoint* autónomo pero altamente integrable. A nivel local, interactúa directamente con el sistema de archivos del sistema operativo anfitrión y procesos de bajo nivel para invocar a ClamAV. A nivel corporativo, su desarrollo y despliegue están íntimamente ligados a un ecosistema centralizado en GitHub Actions y aprovisionamiento en AWS, permitiendo en un futuro la integración de la telemetría del agente con plataformas SIEM (Security Information and Event Management) de terceros.
 
-El usuario opera en un entorno de **escritorio Windows** (Windows 10/11 x64). La aplicación se ejecuta como un proceso Electron independiente con las siguientes características del entorno:
-- **Pantalla mínima recomendada:** 1280 x 720 (HD).
-- **Requisitos de RAM:** ~150 MB (proceso Electron) + ~200 MB (demonio clamd en memoria).
-- **Almacenamiento:** ~250 MB para las firmas ClamAV locales (`clamav_db/`).
-- **Conexión a Internet:** Opcional (solo requerida para la actualización automática de firmas con `freshclam`).
+### Suposiciones y Dependencias
+* **Dependencias de Software Base:** Se asume que los equipos de destino tienen instaladas las librerías base necesarias para la ejecución de binarios compilados de Electron y el entorno en tiempo de ejecución (Node.js/V8 integrado).
+* **Motor Analítico:** El sistema depende de la disponibilidad y mantenimiento continuo de la base de datos de firmas de virus de ClamAV.
+* **Conectividad:** Aunque el escaneo puede ser offline, la actualización de firmas de virus y el reporte de telemetría asumen conectividad periódica a Internet o a un servidor de red local seguro.
+* **Permisos del Sistema:** El usuario de instalación o el software automatizado de distribución (MDM) deberá conceder los permisos de lectura/escritura a nivel raíz o unidad lógica para permitir escaneos profundos (Deep Scans).
 
----
+## 5. Características del Producto (Features)
 
-## 4. Vista General del Producto
+* **Protección en Tiempo Real (Real-Time Shield):** Monitoreo activo de directorios críticos y descargas entrantes, interceptando y escaneando operaciones de E/S de archivos.
+* **Escaneo Bajo Demanda (On-Demand Scanning):** Capacidad del usuario para lanzar análisis rápidos (memoria y rutas comunes), completos (todo el disco) o personalizados (carpetas específicas).
+* **Gestión Segura de Cuarentena (Vault):** Aislamiento automático de archivos infectados, cifrando el payload original e imposibilitando su ejecución hasta que el administrador lo apruebe o elimine de forma segura.
+* **Actualización Automática de Firmas (Auto-Updater):** Proceso en segundo plano que sincroniza las bases de datos de definiciones de malware contra los repositorios de ClamAV sin requerir intervención manual.
+* **Pipeline DevSecOps Integrado:** Generación de compilaciones automatizadas, pruebas BDD/E2E visuales (Playwright) y reportes de vulnerabilidades estáticas (Semgrep) antes de cada lanzamiento.
+* **Interfaz de Usuario Web-Native:** Panel de control responsivo, moderno (TailwindCSS) y reactivo (React 19) que brinda métricas, historial de análisis y alertas en una experiencia fluida.
 
-### 4.1 Perspectiva del Producto
+## 6. Restricciones y Requisitos No Funcionales (Atributos de Calidad)
 
-RustGuard no es un módulo de un sistema mayor, sino un **producto independiente y autónomo**. Se distribuye como un archivo ejecutable portable (`.exe`) o instalador NSIS, sin depender de servicios en la nube, APIs externas o suscripciones. La única dependencia externa es la instalación local de ClamAV (`C:\Program Files\ClamAV`), cuya instalación se puede realizar mediante Winget (`winget install ClamAV.ClamAV`).
-
-### 4.2 Capacidades del Producto
-
-Las capacidades diferenciadoras de RustGuard se clasifican en seis áreas funcionales:
-
-| # | Capacidad | Descripción Técnica |
-| :---: | :--- | :--- |
-| CP-01 | **Escaneo por Firmas ClamAV** | Invocación del binario `clamdscan.exe` como subproceso asíncrono con parsing de resultados línea por línea (CLEAN/THREAT/IGNORED/INFO). |
-| CP-02 | **Triple Modalidad de Escaneo** | Rápido (AppData, Downloads, Temp, Startup), Completo (disco C:\), Personalizado (selección por diálogo nativo). |
-| CP-03 | **Protección en Tiempo Real** | Monitoreo del file system vía `chokidar` con cola de escaneo, notificaciones nativas de Windows y alertas IPC al frontend. |
-| CP-04 | **Anti-Ransomware Heurístico** | Despliegue de honeypots ocultos (`.rg_canary.docx`, `.rg_canary.jpg`), detección de modificación/eliminación, alerta crítica a pantalla completa. |
-| CP-05 | **Cuarentena Persistente** | Aislamiento de archivos infectados con extensión `.quar`, registro en SQLite, restauración y eliminación permanente. |
-| CP-06 | **Historial Auditable** | Registro de todos los escaneos (tipo, fecha, archivos analizados, amenazas, estado), con exportación a archivo `.txt` y visor de logs con modal detallado. |
-
----
-
-## 5. Restricciones
-
-### 5.1 Restricciones Técnicas
-
-- **Dependencia de ClamAV:** El sistema requiere que el usuario tenga ClamAV instalado localmente en `C:\Program Files\ClamAV`. Sin esta dependencia, las funciones de escaneo retornan un resultado vacío con un error registrado en el log.
-- **Límites de ClamAV:** El tamaño máximo de archivo analizable está configurado en `clamd.conf` como `MaxFileSize 500M` y `MaxScanSize 500M`. Archivos superiores serán omitidos por el motor.
-- **Archivos bloqueados por el S.O.:** Archivos en uso por el sistema operativo (Error 32: proceso en uso) no pueden ser escaneados y son clasificados como `IGNORED`.
-
-### 5.2 Restricciones de Plataforma
-
-- **Sistema Operativo:** Actualmente optimizado para **Windows 10/11 x64**. La lógica de rutas (`paths.js`), ocultamiento de honeypots (`attrib +h`) y resolución de binarios ClamAV está hardcoded para Windows.
-- **Arquitectura:** Solo se generan builds para **x64** (NSIS y Portable).
-- **Framework:** La aplicación depende de Electron 31 y Node.js integrado, lo que establece un baseline de ~80 MB para el ejecutable base.
-
----
-
-## 6. Rangos de Calidad
-
-Para garantizar la calidad del producto, se han establecido los siguientes rangos y herramientas:
-
-| Dimensión de Calidad | Herramienta | Objetivo |
-| :--- | :--- | :--- |
-| **Cobertura de Código** | Vitest + @vitest/coverage-v8 | ≥ 80% de cobertura en componentes React |
-| **Pruebas Unitarias** | Vitest + Testing Library | Validación de navegación, modales, estado y renderizado de todos los componentes |
-| **Pruebas E2E / BDD** | Playwright + playwright-bdd | 14 escenarios Gherkin que cubren flujos completos de la aplicación |
-| **Pruebas de Mutación** | Stryker Mutator | Validación de que los tests detectan cambios intencionados en el código |
-| **Análisis Estático** | Semgrep + Snyk | Detección de vulnerabilidades en código y dependencias |
-| **IaC Validation** | Terraform fmt + plan | Verificación de sintaxis y plan de ejecución de infraestructura |
-
----
-
-## Bibliografía
-
-1. McGraw, G. (2006). *Software Security: Building Security In*. Addison-Wesley Professional.
-2. OWASP Foundation. (2025). *OWASP Top 10 Proactive Controls*. Recuperado de https://owasp.org/www-project-proactive-controls/
-3. Electron. (2025). *Electron Documentation*. Recuperado de https://www.electronjs.org/docs
-4. AV-TEST Institute. (2025). *Malware Statistics & Trends*. Recuperado de https://www.av-test.org/en/statistics/malware/
-5. ClamAV. (2025). *ClamAV Official Documentation*. Recuperado de https://docs.clamav.net/
+* **Rendimiento:**
+  * El servicio de escaneo en segundo plano no debe exceder el 5% del uso de la CPU durante el monitoreo inactivo.
+  * Los análisis bajo demanda rápidos deben completarse en menos de 5 minutos en discos de estado sólido (SSD) modernos.
+  * La interfaz de React debe arrancar e hidratarse en menos de 2 segundos desde la llamada del sistema.
+* **Confiabilidad y Disponibilidad:**
+  * El demonio principal de Electron debe incluir un mecanismo de *watchdog* que lo reinicie automáticamente ante un fallo crítico (crash).
+  * Tolerancia a fallos en la actualización de firmas: Si el servidor principal de ClamAV falla, el sistema utilizará el último snapshot válido sin bloquear la funcionalidad offline.
+* **Seguridad:**
+  * Acceso de administración local protegido para evitar que software malicioso deshabilite la protección (Tamper Protection).
+  * Todos los binarios liberados deben estar firmados digitalmente para evitar ataques de cadena de suministro.
+  * Privacidad: No se enviará el contenido de los archivos escaneados a la nube; todo el análisis se realizará localmente (On-Premise en el *endpoint*).
+* **Mantenibilidad y Extensibilidad:**
+  * Adopción de una separación estricta de dominios, aislando el puente IPC (Inter-Process Communication) del núcleo de escaneo.
+  * Cobertura de pruebas unitarias superior al 40% (monitoreada por Vitest) y pruebas de mutación continuas (Stryker) para garantizar código resiliente a cambios refactorizados.
