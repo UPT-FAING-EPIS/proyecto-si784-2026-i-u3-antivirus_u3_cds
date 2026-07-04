@@ -36,9 +36,9 @@ La suite está diseñada de manera modular, donde cada cliente opera independien
 ```mermaid
 flowchart TD
     subgraph RustGuard Ecosystem
-        A[<b>GitHub Action</b><br/>DevSecOps Pipeline] -->|Fuga de Secretos & Ofuscación| E{Motor de Análisis (Python)}
-        B[<b>Telegram Bot</b><br/>Sandbox Messaging] -->|Aislamiento Temporal & ClamAV| F{Motor de Análisis (Node.js)}
-        C[<b>VS Code Extension</b><br/>Local IDE Scanner] -->|Regex & Binary Headers| G{Motor de Análisis (TypeScript)}
+        A[<b>GitHub Action</b><br/>DevSecOps Pipeline] -->|Fuga de Secretos & Ofuscación| E{"Motor de Análisis (Python)"}
+        B[<b>Telegram Bot</b><br/>Sandbox Messaging] -->|Aislamiento Temporal & ClamAV| F{"Motor de Análisis (Node.js)"}
+        C[<b>VS Code Extension</b><br/>Local IDE Scanner] -->|Regex & Binary Headers| G{"Motor de Análisis (TypeScript)"}
     end
     
     E -->|Bloquea Pull Requests| H((Reporte de Seguridad))
