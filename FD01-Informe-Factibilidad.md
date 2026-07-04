@@ -1,8 +1,6 @@
 <center>
 
-[comment]: <img src="./media/media/image1.png" style="width:1.088in;height:1.46256in" alt="escudo.png" />
-
-![./media/media/image1.png](./media/logo-upt.png)
+![./media/logo-upt.png](./media/logo-upt.png)
 
 **UNIVERSIDAD PRIVADA DE TACNA**
 
@@ -10,221 +8,109 @@
 
 **Escuela Profesional de Ingeniería de Sistemas**
 
-**Proyecto *{Nombre de Proyecto}***
+**Proyecto de Antivirus**
 
-Curso: *{Nombre de Asignatura}*
+Curso: *Calidad y Pruebas de Software*
 
-Docente: *{Nombre de Docente}*
+Docente: *Mag. Patrick Cuadros Quiroga*
 
 Integrantes:
 
-***{Apellidos y nombres del estudiante (código universitario)}***
+***LLica Mamani, Jimmy Mijair (2023076789)***
+
+***Sierra Ruiz, Iker Alberto (2023077090)***
 
 **Tacna – Perú**
 
-***{Año}***
+***2026***
 
-**  
-**
 </center>
-<div style="page-break-after: always; visibility: hidden">\pagebreak</div>
 
-Sistema *{Nombre del Sistema}*
+<div style="page-break-after: always; visibility: hidden"></div>
+
+Sistema *RustGuard Antivirus*
 
 Informe de Factibilidad
 
-Versión *{1.0}*
+Versión *2.0*
 
-|CONTROL DE VERSIONES||||||
-| :-: | :- | :- | :- | :- | :- |
-|Versión|Hecha por|Revisada por|Aprobada por|Fecha|Motivo|
-|1\.0|MPV|ELV|ARV|10/10/2020|Versión Original|
+| CONTROL DE VERSIONES | | | | |
+|:---:|:---|:---|:---|:---|
+| Versión | Hecha por | Revisada por | Aprobada por | Fecha | Motivo |
+| 1.0 | LLica Mamani, Jimmy Mijair | Sierra Ruiz, Iker Alberto | LLica Mamani, Jimmy Mijair | 02/06/2026 | Versión Inicial |
+| 2.0 | Equipo RustGuard | Mag. Patrick Cuadros Quiroga | Equipo RustGuard | 04/07/2026 | Versión Extendida e Integrada |
 
-<div style="page-break-after: always; visibility: hidden">\pagebreak</div>
+<div style="page-break-after: always; visibility: hidden"></div>
 
 # **INDICE GENERAL**
 
-[1. Descripción del Proyecto](#_Toc52661346)
+[1. Descripción del Proyecto](#1-descripción-del-proyecto)
 
-[2. Riesgos](#_Toc52661347)
+[2. Riesgos y Mitigación](#2-riesgos-y-mitigación)
 
-[3. Análisis de la Situación actual](#_Toc52661348)
+[3. Análisis de la Situación actual](#3-análisis-de-la-situación-actual)
 
-[4. Estudio de Factibilidad](#_Toc52661349)
+[4. Estudio de Factibilidad](#4-estudio-de-factibilidad)
 
-[4.1 Factibilidad Técnica](#_Toc52661350)
+&nbsp;&nbsp;[4.1 Factibilidad Técnica](#41-factibilidad-técnica)
 
-[4.2 Factibilidad económica](#_Toc52661351)
+&nbsp;&nbsp;[4.2 Factibilidad Económica](#42-factibilidad-económica)
 
-[4.3 Factibilidad Operativa](#_Toc52661352)
+&nbsp;&nbsp;[4.3 Factibilidad Operativa](#43-factibilidad-operativa)
 
-[4.4 Factibilidad Legal](#_Toc52661353)
+&nbsp;&nbsp;[4.4 Factibilidad Legal](#44-factibilidad-legal)
 
-[4.5 Factibilidad Social](#_Toc52661354)
+<div style="page-break-after: always; visibility: hidden"></div>
 
-[4.6 Factibilidad Ambiental](#_Toc52661355)
+## 1. Descripción del Proyecto
 
-[5. Análisis Financiero](#_Toc52661356)
+**RustGuard Antivirus** ha evolucionado de un escáner aislado a una suite completa (ecosistema) orientada a proteger el ciclo de vida del desarrollo y la transferencia de archivos en entornos modernos. El proyecto se compone de tres frentes tecnológicos interconectados conceptualmente, aunque independientes en su despliegue:
 
-[6. Conclusiones](#_Toc52661357)
+1. **RustGuard DevSecOps Action:** Una integración en GitHub Actions escrita en Python que escanea automáticamente repositorios completos en busca de secretos expuestos, paylods de malware, inyección de código y archivos de doble extensión. Actúa como portero de seguridad en metodologías CI/CD.
+2. **RustGuard Telegram Bot:** Un agente conversacional escrito en Node.js que aprovecha el motor de ClamAV instalado en el sistema host para actuar como sandbox. Recibe archivos de usuarios, los evalúa en un entorno temporal aislado, dictamina su nivel de peligrosidad y elimina rastros (`zero-trace`), protegiendo ecosistemas de mensajería.
+3. **RustGuard VS Code Extension:** Una extensión autónoma desarrollada en TypeScript/Node.js para entornos de programación locales. Realiza comprobaciones a nivel de bytes (cabeceras PE) y emplea heurística y hashes criptográficos (SHA-256) sin requerir internet, garantizando la seguridad en el entorno primario del desarrollador.
 
+---
 
-<div style="page-break-after: always; visibility: hidden">\pagebreak</div>
+## 2. Riesgos y Mitigación
 
-**<u>Informe de Factibilidad</u>**
+| Riesgo | Impacto | Estrategia de Mitigación |
+| :--- | :--- | :--- |
+| **Complejidad de Mantenimiento:** Manejo de 3 lenguajes distintos (Python, JS, TS). | Alto | Se ha definido un estándar de programación riguroso y una separación clara de responsabilidades arquitectónicas (Action vs Bot vs Extension). |
+| **Dependencia de ClamAV (Telegram Bot):** El servidor necesita mantener firmas actualizadas. | Medio | Implementación de rutinas automáticas (`freshclam`) a nivel servidor y limitación del escaneo al tamaño del directorio `/tmp`. |
+| **Falsos Positivos en Regex (VSCode/Action):** Detección errónea de código legítimo. | Medio | Calibración detallada de Expresiones Regulares; el usuario de VSCode/Github mantiene el control final de anular la advertencia revisando el log (Output Channel / Action Logs). |
+| **Exceso de Carga (Action):** Repositorios masivos ralentizando el pipeline. | Bajo | Exclusión de carpetas predecibles como `node_modules` y `.git`, así como escaneos parciales por `scan-path`. |
 
-1. <span id="_Toc52661346" class="anchor"></span>**Descripción del Proyecto**
+---
 
-    1.1. Nombre del proyecto
+## 3. Análisis de la Situación actual
 
-    1.2. Duración del proyecto
+Actualmente, las empresas enfrentan amenazas en múltiples vectores de ataque: código inyectado a través de repositorios compartidos, descarga de utilidades ofuscadas durante la escritura de código en los IDE, y transferencia de ejecutables maliciosos en canales de mensajería empresarial como Telegram.
+Los sistemas tradicionales de antivirus (basados únicamente en el escaneo de disco en segundo plano) suelen ser intrusivos, consumen altos recursos de RAM y no están integrados en las herramientas de uso diario del programador. RustGuard propone acercar la seguridad (Shift-Left Security) proveyéndola exactamente donde ocurre el flujo de trabajo: el repositorio (GitHub), el IDE (VS Code) y la comunicación (Telegram).
 
-    1.3. Descripción
+---
 
-        En que consiste el proyecto/importancia del mismo, contexto en que se va desenvolver
+## 4. Estudio de Factibilidad
 
-    1.4. Objetivos
+### 4.1 Factibilidad Técnica
+Técnicamente, el sistema es altamente viable. 
+- **VSCode:** Utiliza el API nativa de VSCode (`vscode.commands.registerCommand`) y librerías Node `fs` y `crypto`, no requiere dependencias pesadas.
+- **Telegram:** Aprovecha Node Telegram Bot API y la capacidad de Spawning Processes de Node.js (`child_process.exec`) para comunicarse con ClamAV, lo que lo hace ligero y asíncrono.
+- **Action:** Se empaqueta eficientemente en una imagen Docker ultraligera (`python:3.10-slim`), asegurando portabilidad e integración perfecta con los runners de GitHub.
 
-        1.4.1 Objetivo general
-        1.4.2 Objetivos Específicos
-            Para cada objetivo específico se indicara que se va a lograr
+### 4.2 Factibilidad Económica
+El proyecto tiene un **Costo Operativo de $0** para su despliegue inicial y de pruebas.
+- **Alojamiento (Action):** Los runners públicos de GitHub Actions son gratuitos para proyectos Open Source.
+- **IDE:** VS Code es de código abierto y gratuito.
+- **Bot:** La API de Telegram es gratuita; el alojamiento de ClamAV puede realizarse en servidores de bajo costo (VPS Tier 1) y en modo local para entornos de prueba.
+- **Licenciamiento:** El motor antivirus principal depende de firmas Open Source (ClamAV) y heurística de creación propia, evadiendo pagos por licencias de software propietario.
 
-<div style="page-break-after: always; visibility: hidden">\pagebreak</div>
+### 4.3 Factibilidad Operativa
+Desde el punto de vista del usuario final, la operatividad es transparente:
+- El **desarrollador** no nota la Action hasta que rompe accidentalmente las reglas de seguridad.
+- El **programador** en VSCode simplemente hace clic derecho sin salir de su editor.
+- El **usuario común** arrastra su archivo a Telegram y recibe una respuesta casi inmediata.
+Esta descentralización garantiza una curva de aprendizaje mínima.
 
-2. <span id="_Toc52661347" class="anchor"></span>**Riesgos**
-
-    Señale los riesgos que pudieran afectar el éxito del proyecto.}*
-
-<div style="page-break-after: always; visibility: hidden">\pagebreak</div>
-
-3. <span id="_Toc52661348" class="anchor"></span>**Análisis de la Situación actual**
-
-    3.1. Planteamiento del problema
-
-            Describa antecedentes y situación actual, explicando la problemática y/o necesidad que será resuelta con el proyecto propuesto.
-
-    3.2. Consideraciones de hardware y software
-
-            Hardware y software posibles para la implementación, se analizara lo que existe y es alcanzable, se evaluara que tecnología se puede > utilizar en el proyecto.
-
-<div style="page-break-after: always; visibility: hidden">\pagebreak</div>
-
-4. <span id="_Toc52661349" class="anchor"></span>**Estudio de
-    Factibilidad**
-
-    Describir los resultados que esperan alcanzar del estudio de factibilidad, las actividades que se realizaron para preparar la evaluación de factibilidad y por quien fue aprobado.
-
-    4.1. <span id="_Toc52661350" class="anchor"></span>Factibilidad Técnica
-
-        El estudio de viabilidad técnica se enfoca en obtener un entendimiento de los recursos tecnológicos disponibles actualmente y su aplicabilidad a las necesidades que se espera tenga el proyecto. En el caso de tecnología informática esto implica una evaluación del hardware y software y como este puede cubrir las necesidades del sistema propuesto.
-
-        Realizar una evaluación de la tecnología actual existente y la posibilidad de utilizarla en el desarrollo e implantación del sistema.*
-
-        Describir acerca del hardware (equipos, servidor), software (aplicaciones, navegadores, sistemas operativos, dominio, internet, infraestructura de red física, etc.
-
-    4.2. <span id="_Toc52661351" class="anchor"></span>Factibilidad Económica
-
-        El propósito del estudio de viabilidad económica, es determinar los beneficios económicos del proyecto o sistema propuesto para la organización, en contraposición con los costos.
-        Como se mencionó anteriormente en el estudio de factibilidad técnica wvaluar si la institución (departamento de TI) cuenta con las herramientas necesarias para la implantación del sistema y evaluar si la propuesta requiere o no de una inversión inicial en infraestructura informática.
-        Se plantearán los costos del proyecto.
-        Costeo del Proyecto: Consiste en estimar los costos de los recursos Humanos, materiales o consumibles y/o máquinas) directos para completar las actividades del proyecto}.*
-
-        Definir los siguientes costos:
-
-        4.2.1. Costos Generales
-
-                Los costos generales son todos los gastos realizados en accesorios y material de oficina y de uso diario, necesarios para los procesos, tales como, papeles, plumas, cartuchos de impresora, marcadores, computadora etc. Colocar tabla de costos.
-
-        4.2.2. Costos operativos durante el desarrollo 
-        
-                Evaluar costos necesarios para la operatividad de las actividades de la empresa durante el periodo en el que se realizara el proyecto. Los costos de operación pueden ser renta de oficina, agua, luz, teléfono, etc.
-
-        4.2.3. Costos del ambiente
-
-                Evaluar si se cuenta con los requerimientos técnicos para la implantación del software como el dominio, infraestructura de red, acceso a internet, etc.
-
-        4.2.4. Costos de personal
-
-                Aquí se incluyen los gastos generados por el recurso humano que se necesita para el desarrollo del sistema únicamente.
-
-                No se considerará personal para la operación y funcionamiento del sistema.
-
-                Incluir tabla que muestra los gastos correspondientes al personal.
-
-                Indicar organización y roles. Indicar horario de trabajo del personal.
-
-        4.2.5.  Costos totales del desarrollo del sistema
-
-                {Totalizar costos y realizar resumen de costo final del proyecto y la forma de pago.
-
-    4.3. <span id="_Toc52661352" class="anchor"></span>Factibilidad Operativa
-
-        Describir los beneficios del producto y si se tiene la capacidad por parte del cliente para mantener el sistema funcionando y garantizar el buen funcionamiento y su impacto en los usuarios. Lista de interesados.
-
-    4.4. <span id="_Toc52661353" class="anchor"></span>Factibilidad Legal
-
-        Determinar si existe conflicto del proyecto con restricciones legales como leyes y regulaciones del país o locales relacionadas con seguridad, protección de datos, conducta de negocio, empleo y adquisiciones.
-
-    4.5. <span id="_Toc52661354" class="anchor"></span>Factibilidad Social 
-
-        Evaluar influencias y asuntos de índole social y cultural como el clima político, códigos de conducta y ética*
-
-    4.6. <span id="_Toc52661355" class="anchor"></span>Factibilidad Ambiental
-
-        Evaluar influencias y asuntos de índole ambiental como el impacto y repercusión en el medio ambiente.
-
-<div style="page-break-after: always; visibility: hidden">\pagebreak</div>
-
-5. <span id="_Toc52661356" class="anchor"></span>**Análisis Financiero**
-
-    El plan financiero se ocupa del análisis de ingresos y gastos asociados a cada proyecto, desde el punto de vista del instante temporal en que se producen. Su misión fundamental es detectar situaciones financieramente inadecuadas.
-    Se tiene que estimar financieramente el resultado del proyecto.
-
-    5.1. Justificación de la Inversión
-
-        5.1.1. Beneficios del Proyecto
-
-            El beneficio se calcula como el margen económico menos los costes de oportunidad, que son los márgenes que hubieran podido obtenerse de haber dedicado el capital y el esfuerzo a otras actividades.
-            El beneficio, obtenido lícitamente, no es sólo una recompensa a la inversión, al esfuerzo y al riesgo asumidos por el empresario, sino que también es un factor esencial para que las empresas sigan en el  mercado e incorporen nuevas inversiones al tejido industrial y social de las naciones.
-            Describir beneficios tangibles e intangibles*
-            Beneficios tangibles: son de fácil cuantificación, generalmente están relacionados con la reducción de recursos o talento humano.
-            Beneficios intangibles: no son fácilmente cuantificables y están relacionados con elementos o mejora en otros procesos de la organización.
->
-            Ejemplo de beneficios:
-
-            - Mejoras en la eficiencia del área bajo estudio.
-            - Reducción de personal.
-            - Reducción de futuras inversiones y costos.
-            - Disponibilidad del recurso humano.
-            - Mejoras en planeación, control y uso de recursos.
-            - Suministro oportuno de insumos para las operaciones.
-            - Cumplimiento de requerimientos gubernamentales.
-            - Toma acertada de decisiones.
-            - Disponibilidad de información apropiada.
-            - Aumento en la confiabilidad de la información.
-            - Mejor servicio al cliente externo e interno
-            - Logro de ventajas competitivas.
-            - Valor agregado a un producto de la compañía.
-        
-        5.1.2. Criterios de Inversión
-
-            5.1.2.1. Relación Beneficio/Costo (B/C)
-
-                En base a los costos y beneficios identificados se evalúa si es factible el desarrollo del proyecto. 
-                Si se presentan varias alternativas de solución se evaluará cada una de ellas para determinar la mejor solución desde el punto de vista del > retorno de la inversión
-                El B/C si es mayor a uno, se acepta el proyecto; si el B/C es igual a uno es indiferente aceptar o rechazar el proyecto y si el B/C es menor a uno se rechaza el proyecto
-
-            5.1.2.2. Valor Actual Neto (VAN)
-            
-                Valor actual de los beneficios netos que genera el proyecto. Si el VAN es mayor que cero, se acepta el proyecto; si el VAN es igual a cero es indiferente aceptar o rechazar el proyecto y si el VAN es menor que cero se rechaza el proyecto
-
-            5.1.2.3 Tasa Interna de Retorno (TIR)*
-                Es la tasa porcentual que indica la rentabilidad promedio anual que genera el capital invertido en el proyecto. Si la TIR es mayor que el costo de oportunidad se acepta el proyecto, si la TIR es igual al costo de oportunidad es indiferente aceptar o rechazar el proyecto, si la TIR es menor que el costo de oportunidad se rechaza el proyecto
-
-                Costo de oportunidad de capital (COK) es la tasa de interés que podría haber obtenido con el dinero invertido en el proyecto
-
-<div style="page-break-after: always; visibility: hidden">\pagebreak</div>
-
-6. <span id="_Toc52661357" class="anchor"></span>**Conclusiones**
-
-Explicar los resultados del análisis de factibilidad que nos indican si el proyecto es viable y factible.
+### 4.4 Factibilidad Legal
+El proyecto es compatible con normativas estándar de código abierto. Al implementar la metodología *Zero-Trace* en el bot de Telegram (eliminando permanentemente los archivos del directorio `/tmp` tras su análisis), RustGuard garantiza la privacidad del usuario, alineándose indirectamente con leyes de protección de datos (como GDPR) al no almacenar PII (Personal Identifiable Information) ni archivos sensibles a largo plazo.

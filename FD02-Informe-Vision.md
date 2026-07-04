@@ -1,8 +1,6 @@
 <center>
 
-[comment]: <img src="./media/media/image1.png" style="width:1.088in;height:1.46256in" alt="escudo.png" />
-
-![./media/media/image1.png](./media/logo-upt.png)
+![./media/logo-upt.png](./media/logo-upt.png)
 
 **UNIVERSIDAD PRIVADA DE TACNA**
 
@@ -10,221 +8,108 @@
 
 **Escuela Profesional de Ingeniería de Sistemas**
 
-**Proyecto *{Nombre de Proyecto}***
+**Proyecto de Antivirus**
 
-Curso: *{Nombre de Asignatura}*
+Curso: *Calidad y Pruebas de Software*
 
-Docente: *{Nombre de Docente}*
+Docente: *Mag. Patrick Cuadros Quiroga*
 
 Integrantes:
 
-***{Apellidos y nombres del estudiante (código universitario)}***
+***LLica Mamani, Jimmy Mijair (2023076789)***
+
+***Sierra Ruiz, Iker Alberto (2023077090)***
 
 **Tacna – Perú**
 
-***{Año}***
+***2026***
 
-**  
-**
 </center>
-<div style="page-break-after: always; visibility: hidden">\pagebreak</div>
 
-|CONTROL DE VERSIONES||||||
-| :-: | :- | :- | :- | :- | :- |
-|Versión|Hecha por|Revisada por|Aprobada por|Fecha|Motivo|
-|1\.0|MPV|ELV|ARV|10/10/2020|Versión Original|
+<div style="page-break-after: always; visibility: hidden"></div>
 
+Sistema *RustGuard Antivirus*
 
+Informe de Visión de Producto
 
+Versión *2.0*
 
+| CONTROL DE VERSIONES | | | | |
+|:---:|:---|:---|:---|:---|
+| Versión | Hecha por | Revisada por | Aprobada por | Fecha | Motivo |
+| 1.0 | Sierra Ruiz, Iker Alberto | LLica Mamani, Jimmy Mijair | Sierra Ruiz, Iker Alberto | 02/06/2026 | Versión Inicial |
+| 2.0 | Equipo RustGuard | Mag. Patrick Cuadros Quiroga | Equipo RustGuard | 04/07/2026 | Integración de la Suite Omnicanal |
 
+<div style="page-break-after: always; visibility: hidden"></div>
 
+# **INDICE GENERAL**
 
+[1. Introducción](#1-introducción)
 
+[2. Posicionamiento](#2-posicionamiento)
 
+&nbsp;&nbsp;[2.1 Oportunidad de Negocio](#21-oportunidad-de-negocio)
 
+&nbsp;&nbsp;[2.2 Declaración de Posicionamiento](#22-declaración-de-posicionamiento)
 
+[3. Descripciones de los Interesados y Usuarios](#3-descripciones-de-los-interesados-y-usuarios)
 
-**Sistema *{Nombre del Sistema}***
+[4. Capacidades del Producto](#4-capacidades-del-producto)
 
-**Documento de Visión**
+[5. Restricciones](#5-restricciones)
 
-**Versión *{1.0}***
-**
+<div style="page-break-after: always; visibility: hidden"></div>
 
-<div style="page-break-after: always; visibility: hidden">\pagebreak</div>
+## 1. Introducción
 
-|CONTROL DE VERSIONES||||||
-| :-: | :- | :- | :- | :- | :- |
-|Versión|Hecha por|Revisada por|Aprobada por|Fecha|Motivo|
-|1\.0|MPV|ELV|ARV|10/10/2020|Versión Original|
+El **Informe de Visión de Producto** define las bases conceptuales, el mercado objetivo y las metas estratégicas a gran escala de **RustGuard Antivirus**. Este documento sirve para alienar los esfuerzos del equipo de desarrollo de manera que cada subsistema (VSCode, GitHub Action, Telegram) comparta un objetivo común: la democratización y descentralización de la seguridad de software (DevSecOps y Seguridad al Usuario Final).
 
+---
 
-<div style="page-break-after: always; visibility: hidden">\pagebreak</div>
+## 2. Posicionamiento
 
+### 2.1 Oportunidad de Negocio
+Con el auge del teletrabajo y los repositorios Open Source globales, el malware se ha camuflado eficientemente en herramientas cotidianas.
+* Los atacantes comprometen pipelines inyectando `curl | bash` u ocultando payloads base64 en pull requests.
+* El malware se transfiere fácilmente a través de grupos y chats corporativos en Telegram.
+* Los desarrolladores pueden ejecutar código malicioso por error desde su editor local al revisar repositorios dudosos.
+RustGuard aprovecha estas brechas para brindar una protección *Omnicanal* (en tránsito, en nube y en local), presentándose como una suite modular en lugar de un monolito pesado.
 
-**INDICE GENERAL**
-#
-[1.	Introducción](#_Toc52661346)
+### 2.2 Declaración de Posicionamiento
+Para organizaciones de software y usuarios modernos que requieren seguridad ágil y no intrusiva, **RustGuard Antivirus** es una suite modular de seguridad preventiva que provee escaneo heurístico y de firmas directamente en las plataformas de trabajo continuo (GitHub, VSCode, Telegram). A diferencia de los antivirus de disco tradicionales, RustGuard actúa proactivamente bajo un modelo *Shift-Left*, filtrando el malware *antes* de que llegue a compilarse o a dañar el ecosistema local, de forma ligera, con costo $0 y respeto absoluto por la privacidad (Zero-Trace).
 
-1.1	Propósito
+---
 
-1.2	Alcance
+## 3. Descripciones de los Interesados y Usuarios
 
-1.3	Definiciones, Siglas y Abreviaturas
+Se identifican tres perfiles primarios basados en la arquitectura del sistema:
 
-1.4	Referencias
+| Perfil | Rol en el Sistema | Necesidades Principales | Interacción Principal |
+| :--- | :--- | :--- | :--- |
+| **Administrador de DevOps** | Gestor de Repositorios | Evitar la fuga de secretos o inyecciones (Supply Chain Attacks) en las ramas `main`. | **GitHub Action**: Configuración de `scan-path` y revisión de Logs de CI/CD en GitHub. |
+| **Programador / Desarrollador** | Escritura de Código Local | Chequeos locales rápidos sin salir de su flujo (IDE), evitando instalar suites pesadas. | **VS Code Extension**: Clic derecho en el explorador, leyendo Output Channels descriptivos. |
+| **Usuario General / Analista** | Recepción de Archivos | Saber con inmediatez si un archivo recibido es confiable antes de ejecutarlo. | **Telegram Bot**: Uso del comando `/start` e interacción vía drag-and-drop de archivos en chat. |
 
-1.5	Visión General
+---
 
-[2.	Posicionamiento](#_Toc52661347)
+## 4. Capacidades del Producto
 
-2.1	Oportunidad de negocio
+Las ventajas competitivas y capacidades inter-sistemas que diferencian a RustGuard:
 
-2.2	Definición del problema
+1. **Motores Híbridos Desacoplados:**
+   - Heurística y RegEx Nativa (TS/Python) para detectar ofuscaciones de código, macros de office y fugas de credenciales.
+   - Integración nativa con ClamAV (Node.js) para aprovechamiento de bases de datos de malware de escala mundial.
+2. **Inspección de PE (Portable Executable):**
+   - Capacidad en VS Code de buscar magic numbers (`MZ` / `0x4D 0x5A`) en binarios para frustrar intentos de camuflaje de extensiones.
+3. **Flujos de Trabajo Bloqueantes (Fail-Fast):**
+   - La acción de GitHub arroja explícitamente `exit(1)` en caso de amenaza, impidiendo un merge o deploy peligroso.
+4. **Privacidad Automatizada (Zero-Trace):**
+   - Todo archivo procesado en el servidor del bot de Telegram se borra obligatoriamente tras el dictamen, minimizando el riesgo legal.
 
-[3.	Descripción de los interesados y usuarios](#_Toc52661348)
+---
 
-3.1	Resumen de los interesados
+## 5. Restricciones
 
-3.2	Resumen de los usuarios
-
-3.3	Entorno de usuario
-
-3.4	Perfiles de los interesados
-
-3.5	Perfiles de los Usuarios
-
-3.6	Necesidades de los interesados y usuarios
-
-[4.	Vista General del Producto](#_Toc52661349)
-
-4.1	Perspectiva del producto
-
-4.2	Resumen de capacidades
-
-4.3	Suposiciones y dependencias
-
-4.4	Costos y precios
-
-4.5	Licenciamiento e instalación
-
-[5.	Características del producto](#_Toc52661350)
-
-[6.	Restricciones](#_Toc52661351)
-
-[7.	Rangos de calidad](#_Toc52661352)
-
-[8.	Precedencia y Prioridad](#_Toc52661353)
-
-[9.	Otros requerimientos del producto](#_Toc52661354)
-
-b) Estandares legales
-
-c) Estandares de comunicación	](#_toc394513800)37
-
-d) Estandaraes de cumplimiento de la plataforma	](#_toc394513800)42
-
-e) Estandaraes de calidad y seguridad	](#_toc394513800)42
-
-[CONCLUSIONES](#_Toc52661355)
-
-[RECOMENDACIONES](#_Toc52661356)
-
-[BIBLIOGRAFIA](#_Toc52661357)
-
-[WEBGRAFIA](#_Toc52661358)
-
-
-<div style="page-break-after: always; visibility: hidden">\pagebreak</div>
-
-**<u>Informe de Visión</u>**
-
-1. <span id="_Toc52661346" class="anchor"></span>**Introducción**
-
-    1.1	Propósito
-
-    1.2	Alcance
-
-    1.3	Definiciones, Siglas y Abreviaturas
-
-    1.4	Referencias
-
-    1.5	Visión General
-
-<div style="page-break-after: always; visibility: hidden">\pagebreak</div>
-
-2. <span id="_Toc52661347" class="anchor"></span>**Posicionamiento**
-
-    2.1	Oportunidad de negocio
-
-    2.2	Definición del problema
-
-<div style="page-break-after: always; visibility: hidden">\pagebreak</div>
-
-3. <span id="_Toc52661348" class="anchor"></span>**Vista General del Producto**
-
-    3.1	Resumen de los interesados
-
-    3.2	Resumen de los usuarios
-
-    3.3	Entorno de usuario
-
-    3.4	Perfiles de los interesados
-
-    3.5	Perfiles de los Usuarios
-
-    3.6	Necesidades de los interesados y usuarios
-
-<div style="page-break-after: always; visibility: hidden">\pagebreak</div>
-
-4. <span id="_Toc52661349" class="anchor"></span>**Estudio de
-    Factibilidad**
-
-    4.1	Perspectiva del producto
-
-    4.2	Resumen de capacidades
-
-    4.3	Suposiciones y dependencias
-
-    4.4	Costos y precios
-
-    4.5	Licenciamiento e instalación
-
-<div style="page-break-after: always; visibility: hidden">\pagebreak</div>
-
-5. <span id="_Toc52661350" class="anchor"></span>**Características del producto**
-
-<div style="page-break-after: always; visibility: hidden">\pagebreak</div>
-
-6. <span id="_Toc52661351" class="anchor"></span>**Restricciones**
-
-<div style="page-break-after: always; visibility: hidden">\pagebreak</div>
-
-7. <span id="_Toc52661352" class="anchor"></span>**Rangos de Calidad**
-
-<div style="page-break-after: always; visibility: hidden">\pagebreak</div>
-
-8. <span id="_Toc52661353" class="anchor"></span>**Precedencia y Prioridad**
-
-<div style="page-break-after: always; visibility: hidden">\pagebreak</div>
-
-9. <span id="_Toc52661354" class="anchor"></span>**Otros requerimientos del producto**
-
-<div style="page-break-after: always; visibility: hidden">\pagebreak</div>
-
-<span id="_Toc52661355" class="anchor"></span>**CONCLUSIONES**
-
-<div style="page-break-after: always; visibility: hidden">\pagebreak</div>
-
-<span id="_Toc52661356" class="anchor"></span>**RECOMENDACIONES**
-
-<div style="page-break-after: always; visibility: hidden">\pagebreak</div>
-
-<span id="_Toc52661357" class="anchor"></span>**BIBLIOGRAFIA**
-
-<div style="page-break-after: always; visibility: hidden">\pagebreak</div>
-
-<span id="_Toc52661358" class="anchor"></span>**WEBGRAFIA**
-
-<div style="page-break-after: always; visibility: hidden">\pagebreak</div>
+- **Limites de Rendimiento en Sandbox:** El sistema en VS Code no procesará reglas RegEx de texto en archivos superiores a 10MB para prevenir consumos exorbitantes de memoria (Out Of Memory).
+- **Dependencia de ClamAV:** El bot de Telegram requiere que el sistema servidor tenga el binario y bases de firmas correctamente actualizados (`freshclam`) localmente en sus carpetas `bin` relativas o variables del sistema.
+- **Topes de API:** La manipulación de archivos grandes en Telegram está restringida por las normativas de la propia API de Telegram (generalmente archivos < 20MB para bots comunes).
