@@ -1,0 +1,262 @@
+name: DevSecOps CI/CD - GitHub Action
+
+on:
+  push:
+    branches: [ "main", "master", "codigo-action" ]
+  pull_request:
+    branches: [ "main", "master", "codigo-action" ]
+
+jobs:
+  test-and-analyze:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+    - name: Checkout del Codigo
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Configurar Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+
+    - name: Instalar Dependencias
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    # ── PRUEBAS UNITARIAS + COBERTURA ─────────────────────────────
+    - name: Ejecutar Pruebas Unitarias y Cobertura
+      run: pytest --tb=short -v
+      continue-on-error: true
+
+    - name: Anotar Resultados de Cobertura
+      if: always()
+      run: |
+        if [ -f coverage.xml ]; then
+          COVERAGE=$(python -c "
+        import xml.etree.ElementTree as ET
+        tree = ET.parse('coverage.xml')
+        root = tree.getroot()
+        rate = float(root.attrib.get('line-rate', 0)) * 100
+        print(f'{rate:.1f}')
+        ")
+          echo "::notice title=Cobertura de Pruebas::Cobertura total: ${COVERAGE}%"
+        fi
+
+    # ── PRUEBAS DE MUTACION ───────────────────────────────────────
+    - name: Ejecutar Pruebas de Mutacion (Mutmut)
+      run: |
+        mutmut run --paths-to-mutate=scanner.py || true
+        mkdir -p mutmut_html
+        mutmut html --directory mutmut_html || true
+      continue-on-error: true
+
+    - name: Anotar Resultados de Mutaciones
+      if: always()
+      run: |
+        if command -v mutmut &> /dev/null; then
+          RESULTS=$(mutmut results 2>/dev/null || echo "No results")
+          KILLED=$(echo "$RESULTS" | grep -c "Killed" || echo "0")
+          SURVIVED=$(echo "$RESULTS" | grep -c "Survived" || echo "0")
+          echo "::notice title=Pruebas de Mutacion::Mutantes eliminados: ${KILLED}, Mutantes sobrevivientes: ${SURVIVED}"
+        fi
+      continue-on-error: true
+
+    # ── PRUEBAS BDD ───────────────────────────────────────────────
+    - name: Ejecutar Pruebas BDD (Behave)
+      run: |
+        mkdir -p reports
+        behave tests/features --format html --outfile reports/bdd-report.html || true
+      continue-on-error: true
+
+    - name: Anotar Resultados BDD
+      if: always()
+      run: |
+        if [ -f reports/bdd-report.html ]; then
+          echo "::notice title=Pruebas BDD::Reporte BDD generado exitosamente"
+        else
+          echo "::warning title=Pruebas BDD::No se genero el reporte BDD"
+        fi
+      continue-on-error: true
+
+    # ── ANALISIS ESTATICO: SEMGREP ────────────────────────────────
+    - name: Analisis Estatico Semgrep
+      run: |
+        pip install semgrep
+        mkdir -p semgrep_report
+        semgrep --config=auto --json --output=semgrep_report/semgrep-results.json . || true
+        semgrep --config=auto --output=semgrep_report/semgrep-results.txt . || true
+      continue-on-error: true
+
+    # ── ANALISIS ESTATICO: SNYK ───────────────────────────────────
+    - name: Analisis Estatico Snyk
+      run: |
+        mkdir -p snyk_report
+        npm install -g snyk || true
+        snyk auth ${{ secrets.SNYK_TOKEN }} || true
+        snyk test --file=requirements.txt --json > snyk_report/snyk-results.json 2>/dev/null || true
+        snyk test --file=requirements.txt > snyk_report/snyk-results.txt 2>/dev/null || true
+      continue-on-error: true
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+    # ── ANALISIS ESTATICO: SONARCLOUD ─────────────────────────────
+    - name: Analisis Estatico SonarCloud
+      uses: SonarSource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      continue-on-error: true
+
+    # ── PREPARAR Y DESPLEGAR REPORTES A GH-PAGES ─────────────────
+    - name: Preparar Reportes para GH-Pages
+      if: always()
+      run: |
+        mkdir -p public_html/coverage
+        mkdir -p public_html/mutmut
+        mkdir -p public_html/bdd
+        mkdir -p public_html/semgrep
+        mkdir -p public_html/snyk
+        mkdir -p public_html/ui-videos
+
+        # Coverage report (pytest-cov HTML)
+        cp -r htmlcov/* public_html/coverage/ 2>/dev/null || true
+
+        # Mutmut report
+        cp -r mutmut_html/* public_html/mutmut/ 2>/dev/null || true
+
+        # BDD report
+        cp reports/bdd-report.html public_html/bdd/index.html 2>/dev/null || true
+
+        # Semgrep report
+        cp -r semgrep_report/* public_html/semgrep/ 2>/dev/null || true
+        if [ -f public_html/semgrep/semgrep-results.json ]; then
+          python -c "
+        import json, html
+        with open('public_html/semgrep/semgrep-results.json') as f:
+            data = json.load(f)
+        results = data.get('results', [])
+        h = '<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>Semgrep Report</title>'
+        h += '<style>body{font-family:sans-serif;max-width:900px;margin:0 auto;padding:2rem;background:#f6f8fa}'
+        h += 'h1{color:#24292e;border-bottom:1px solid #eee;padding-bottom:.5em}'
+        h += '.card{background:#fff;border:1px solid #e1e4e8;border-radius:6px;padding:1rem;margin:1rem 0}'
+        h += '.severity{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.85em;font-weight:600}'
+        h += '.high{background:#fdd;color:#b00}.medium{background:#fff3cd;color:#856404}.low{background:#d4edda;color:#155724}'
+        h += 'code{background:#f0f0f0;padding:2px 6px;border-radius:3px;font-size:.9em}'
+        h += '</style></head><body><h1>Semgrep Analysis Report</h1>'
+        h += f'<p>Total findings: <strong>{len(results)}</strong></p>'
+        for r in results:
+            sev = r.get('extra',{}).get('severity','info')
+            cls = 'high' if sev=='ERROR' else 'medium' if sev=='WARNING' else 'low'
+            h += f'<div class=\"card\"><span class=\"severity {cls}\">{sev}</span> '
+            h += f'<strong>{html.escape(r.get(\"check_id\",\"unknown\"))}</strong><br>'
+            h += f'File: <code>{html.escape(r.get(\"path\",\"\"))}</code> (line {r.get(\"start\",{}).get(\"line\",\"?\")})<br>'
+            h += f'<p>{html.escape(r.get(\"extra\",{}).get(\"message\",\"\"))}</p></div>'
+        h += '</body></html>'
+        with open('public_html/semgrep/index.html','w') as f:
+            f.write(h)
+        " || true
+        fi
+
+        # Snyk report
+        cp -r snyk_report/* public_html/snyk/ 2>/dev/null || true
+        if [ -f public_html/snyk/snyk-results.json ]; then
+          python -c "
+        import json, html
+        try:
+            with open('public_html/snyk/snyk-results.json') as f:
+                data = json.load(f)
+            vulns = data.get('vulnerabilities', [])
+        except:
+            vulns = []
+        h = '<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>Snyk Report</title>'
+        h += '<style>body{font-family:sans-serif;max-width:900px;margin:0 auto;padding:2rem;background:#f6f8fa}'
+        h += 'h1{color:#24292e;border-bottom:1px solid #eee;padding-bottom:.5em}'
+        h += '.card{background:#fff;border:1px solid #e1e4e8;border-radius:6px;padding:1rem;margin:1rem 0}'
+        h += '.severity{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.85em;font-weight:600}'
+        h += '.critical{background:#fdd;color:#b00}.high{background:#fdd;color:#b00}.medium{background:#fff3cd;color:#856404}.low{background:#d4edda;color:#155724}'
+        h += '</style></head><body><h1>Snyk Vulnerability Report</h1>'
+        h += f'<p>Total vulnerabilities: <strong>{len(vulns)}</strong></p>'
+        for v in vulns:
+            sev = v.get('severity','low')
+            h += f'<div class=\"card\"><span class=\"severity {sev}\">{sev.upper()}</span> '
+            h += f'<strong>{html.escape(v.get(\"title\",\"unknown\"))}</strong><br>'
+            h += f'Package: <code>{html.escape(v.get(\"packageName\",\"\"))}</code><br>'
+            h += f'<p>{html.escape(v.get(\"description\",\"\")[:200])}</p></div>'
+        if not vulns:
+            h += '<div class=\"card\"><p>No se encontraron vulnerabilidades o Snyk no esta configurado.</p></div>'
+        h += '</body></html>'
+        with open('public_html/snyk/index.html','w') as f:
+            f.write(h)
+        " || true
+        fi
+
+        # Placeholder para ui-videos
+        echo '<html><body><h1>UI Test Videos</h1><p>Los videos de pruebas de interfaz se agregaran proximamente.</p></body></html>' > public_html/ui-videos/index.html
+
+        # .nojekyll para que GitHub Pages no procese con Jekyll
+        touch public_html/.nojekyll
+
+        # Dashboard principal (index.html)
+        cat > public_html/index.html << 'DASHBOARD'
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>RustGuard Action - Dashboard de Calidad y Pruebas</title>
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; max-width: 850px; margin: 0 auto; padding: 2rem; background-color: #f6f8fa; color: #24292e; }
+            h1 { border-bottom: 2px solid #0366d6; padding-bottom: 0.5em; margin-bottom: 1.5rem; font-size: 1.8em; }
+            h2 { color: #586069; font-size: 1em; text-transform: uppercase; letter-spacing: 0.05em; margin: 1.5rem 0 0.8rem; }
+            ul { list-style: none; padding: 0; }
+            li { margin-bottom: 0.8rem; }
+            a { text-decoration: none; color: #0366d6; font-weight: 600; font-size: 1.05em; display: flex; align-items: center; background: #fff; padding: 1rem 1.2rem; border: 1px solid #e1e4e8; border-radius: 6px; transition: all 0.2s; }
+            a:hover { border-color: #0366d6; box-shadow: 0 1px 5px rgba(3,102,214,0.15); transform: translateY(-1px); }
+            .icon { font-size: 1.4em; margin-right: 0.8rem; width: 32px; text-align: center; }
+            .desc { color: #586069; font-weight: 400; font-size: 0.85em; margin-left: auto; }
+            .footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e1e4e8; color: #586069; font-size: 0.85em; text-align: center; }
+          </style>
+        </head>
+        <body>
+          <h1>RustGuard Action - Dashboard de Calidad</h1>
+
+          <h2>Pruebas Automatizadas</h2>
+          <ul>
+            <li><a href="coverage/index.html"><span class="icon">&#x1F4CA;</span> Reporte de Cobertura (Pytest) <span class="desc">Lineas cubiertas por tests</span></a></li>
+            <li><a href="mutmut/index.html"><span class="icon">&#x1F9EC;</span> Reporte de Mutaciones (Mutmut) <span class="desc">Calidad de las pruebas</span></a></li>
+            <li><a href="bdd/index.html"><span class="icon">&#x1F952;</span> Reporte BDD (Behave) <span class="desc">Pruebas de comportamiento</span></a></li>
+          </ul>
+
+          <h2>Analisis Estatico</h2>
+          <ul>
+            <li><a href="semgrep/index.html"><span class="icon">&#x1F50D;</span> Reporte Semgrep <span class="desc">Vulnerabilidades en codigo</span></a></li>
+            <li><a href="snyk/index.html"><span class="icon">&#x1F6E1;</span> Reporte Snyk <span class="desc">Vulnerabilidades en dependencias</span></a></li>
+          </ul>
+
+          <h2>Pruebas de Interfaz</h2>
+          <ul>
+            <li><a href="ui-videos/index.html"><span class="icon">&#x1F3AC;</span> Videos de Pruebas de UI <span class="desc">Grabaciones automatizadas</span></a></li>
+          </ul>
+
+          <div class="footer">
+            Generado automaticamente por GitHub Actions &mdash; RustGuard Antivirus DevSecOps
+          </div>
+        </body>
+        </html>
+        DASHBOARD
+
+    - name: Desplegar Reportes a GitHub Pages
+      if: github.ref == 'refs/heads/codigo-action' && github.event_name == 'push'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./public_html
+        publish_branch: gh-pages
