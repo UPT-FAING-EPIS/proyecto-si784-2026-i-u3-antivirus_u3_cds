@@ -1,0 +1,18 @@
+# Dependencias del Sistema para RustGuard
+
+Para que el sistema funcione correctamente, asegúrate de tener instalados los siguientes componentes a nivel de sistema operativo:
+
+1. **Node.js (v20 o superior)**
+   - Requerido para ejecutar el entorno de desarrollo y empaquetar la aplicación.
+   - [Descargar Node.js](https://nodejs.org/)
+
+2. **ClamAV (Antivirus Engine)**
+   - Es el motor subyacente que utiliza RustGuard para escanear los archivos.
+   - Debe estar instalado y el comando `clamscan` debe estar disponible en la variable de entorno `PATH`.
+   - [Descargar ClamAV](https://www.clamav.net/downloads)
+
+3. **Terraform (Opcional)**
+   - Requerido únicamente si deseas desplegar la infraestructura en la nube (AWS) definida en la carpeta `terraform/`.
+   - [Descargar Terraform](https://developer.hashicorp.com/terraform/downloads)
+
+> **Nota:** Las dependencias del proyecto de Node.js se instalan ejecutando `npm install` en la raíz del repositorio.

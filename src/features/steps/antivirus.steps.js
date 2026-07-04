@@ -27,7 +27,7 @@ Then('the status should change to "ON"', async ({ page }) => {
 });
 
 When('I click on {string}', async ({ page }, text) => {
-  await page.click(`text=${text}`);
+  await page.locator(`text="${text}"`).first().click();
 });
 
 Then('I should be navigated to the "Centro de Escaneo" page', async ({ page }) => {
@@ -125,7 +125,7 @@ Then('I should see "Último Escaneo"', async ({ page }) => {
 });
 
 Then('I should see the application title "RUSTGUARD"', async ({ page }) => {
-  await expect(page.locator('text=RUSTGUARD')).toBeVisible();
+  await expect(page.locator('text="RUSTGUARD"').first()).toBeVisible();
 });
 
 Then('the window control buttons should be visible', async ({ page }) => {

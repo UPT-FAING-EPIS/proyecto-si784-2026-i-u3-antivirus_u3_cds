@@ -60,7 +60,7 @@ function removeHoneypots() {
         // Remove hidden attribute first on Windows if needed, though fs.unlinkSync usually works
         if (os.platform() === 'win32') {
            import('child_process').then(({ execSync }) => {
-             try { execSync(`attrib -h "${filePath}"`); } catch(e){}
+             try { execSync(`attrib -h "${filePath}"`); } catch { /* ignore */ }
              fs.unlinkSync(filePath);
            });
         } else {

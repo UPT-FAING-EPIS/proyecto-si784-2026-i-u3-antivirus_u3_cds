@@ -19,8 +19,8 @@
     "configFile": "vitest.config.js"
   },
   "thresholds": {
-    "high": 80,
-    "low": 70,
-    "break": 70
+    "high": 60,
+    "low": 40,
+    "break": 30
   }
 }

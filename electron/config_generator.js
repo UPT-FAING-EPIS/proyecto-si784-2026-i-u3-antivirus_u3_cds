@@ -1,5 +1,4 @@
 import fs from 'fs';
-import path from 'path';
 import { CLAMD_CONF_PATH, FRESHCLAM_CONF_PATH, CLAMAV_DB_DIR } from './paths.js';
 
 export function generateClamAVConfigs() {

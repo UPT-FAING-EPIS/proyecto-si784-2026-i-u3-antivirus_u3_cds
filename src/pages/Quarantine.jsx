@@ -10,7 +10,6 @@ export default function Quarantine() {
       setLoading(true);
       try {
         const data = await window.electronAPI.getQuarantineRecords();
-        // Filtrar los que no están restaurados/eliminados
         setRecords(data.filter(r => r.restored === 0));
       } catch (err) {
         console.error("Error cargando cuarentena:", err);
@@ -21,6 +20,7 @@ export default function Quarantine() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchRecords();
   }, []);
 

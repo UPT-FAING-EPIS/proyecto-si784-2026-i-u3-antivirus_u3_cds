@@ -46,3 +46,8 @@ reports/
 *.tfstate
 *.tfstate.*
 .terraform.lock.hcl
+
+# Environment variables
+.env
+.env.local
+.env.*

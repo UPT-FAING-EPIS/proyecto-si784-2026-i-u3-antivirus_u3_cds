@@ -2,7 +2,7 @@ import { spawn } from 'child_process';
 import path from 'path';
 import os from 'os';
 import fs from 'fs';
-import { initSessionLog, writeLog, getCurrentLogFilePath } from './logger.js';
+import { initSessionLog, writeLog } from './logger.js';
 import { insertScanStart, updateScanFinish } from './db.js';
 import { CLAMAV_DB_DIR, FRESHCLAM_CONF_PATH, CLAMD_CONF_PATH } from './paths.js';
 
@@ -12,7 +12,6 @@ const CLAMDSCAN_EXE = path.join(CLAMAV_DIR, 'clamdscan.exe');
 const FRESHCLAM_EXE = path.join(CLAMAV_DIR, 'freshclam.exe');
 
 let activeClamProcess = null;
-let activeScanId = null;
 
 export function cancelActiveScan() {
   if (activeClamProcess) {
@@ -87,9 +86,9 @@ async function generateScanList(targetPaths, listFilePath, context) {
           } else {
             stream.write(fullPath + '\n');
           }
-        } catch (e) {}
+        } catch { /* ignore */ }
       }
-    } catch (e) {
+    } catch {
       // Ignorar EPERM/EACCES
     }
   }
@@ -103,7 +102,7 @@ async function generateScanList(targetPaths, listFilePath, context) {
       } else {
         stream.write(target + '\n');
       }
-    } catch (e) {}
+    } catch { /* ignore */ }
   }
   
   return new Promise(resolve => stream.end(resolve));
@@ -116,9 +115,10 @@ async function generateScanList(targetPaths, listFilePath, context) {
  * @param {string[]} additionalArgs - Extra arguments for clamscan (e.g., filesize limits)
  */
 function runClamScan(targetPaths, scanType, additionalArgs = []) {
-  return new Promise(async (resolve, reject) => {
-    // Inicializar log para esta sesión
-    const logFile = initSessionLog();
+  return new Promise((resolve, reject) => {
+    (async () => {
+      // Inicializar log para esta sesión
+      const logFile = initSessionLog();
     writeLog('INFO', `Iniciando escaneo tipo: ${scanType}. Recopilando archivos...`);
     
     if (!fs.existsSync(CLAMDSCAN_EXE)) {
@@ -130,7 +130,6 @@ function runClamScan(targetPaths, scanType, additionalArgs = []) {
 
     // Registrar inicio en DB
     const scanId = insertScanStart(scanType, logFile);
-    activeScanId = scanId;
 
     let context = { isCancelled: false };
     
@@ -146,7 +145,6 @@ function runClamScan(targetPaths, scanType, additionalArgs = []) {
     if (context.isCancelled) {
       if (fs.existsSync(listFilePath)) fs.unlinkSync(listFilePath);
       activeClamProcess = null;
-      activeScanId = null;
       updateScanFinish(scanId, 0, 0, 'cancelled');
       writeLog('WARNING', 'Escaneo cancelado por el usuario.');
       return resolve({ scannedFiles: 0, threatsFound: 0, threats: [] });
@@ -201,10 +199,9 @@ function runClamScan(targetPaths, scanType, additionalArgs = []) {
 
     clamProcess.on('close', (code) => {
       activeClamProcess = null;
-      activeScanId = null;
       
       if (fs.existsSync(listFilePath)) {
-        try { fs.unlinkSync(listFilePath); } catch (e) {}
+        try { fs.unlinkSync(listFilePath); } catch { /* ignore */ }
       }
 
       if (isCancelled) {
@@ -227,12 +224,13 @@ function runClamScan(targetPaths, scanType, additionalArgs = []) {
 
     clamProcess.on('error', (err) => {
       if (fs.existsSync(listFilePath)) {
-        try { fs.unlinkSync(listFilePath); } catch (e) {}
+        try { fs.unlinkSync(listFilePath); } catch { /* ignore */ }
       }
       updateScanFinish(scanId, 0, 0, 'error');
       writeLog('ERROR', `Error iniciando clamdscan: ${err.message}`);
       reject(new Error(`Failed to start ClamdScan: ${err.message}`));
     });
+    })().catch(reject);
   });
 }
 

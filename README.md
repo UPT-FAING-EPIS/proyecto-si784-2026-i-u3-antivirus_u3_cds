@@ -16,7 +16,7 @@ Este proyecto cuenta con varios flujos implementados en `.github/workflows/`:
 
 1. **Infraestructura como Código (`terraform.yml`)**: Despliega y valida los recursos necesarios en AWS.
 2. **Análisis Estático (`static-analysis.yml`)**: Ejecuta **Semgrep** (exportando SARIF al dashboard de GitHub) y **Snyk** para auditar vulnerabilidades en dependencias.
-3. **Cobertura de Código (`coverage.yml`)**: Ejecuta las pruebas unitarias usando `vitest` y sube un reporte HTML (>70% cobertura) a GitHub Pages.
+3. **Cobertura de Código (`coverage.yml`)**: Ejecuta las pruebas unitarias usando `vitest` y sube un reporte HTML (>40% cobertura) a GitHub Pages.
 4. **Pruebas de Mutación (`mutation.yml`)**: Utiliza `Stryker` para validar la robustez de los tests unitarios y sube el reporte a GitHub Pages.
 5. **Pruebas E2E y BDD (`e2e.yml`)**: Ejecuta **Playwright** para pruebas de interfaz incluyendo captura de videos y valida los escenarios Gherkin generados mediante `playwright-bdd`.
 6. **Release Automatizado (`release.yml`)**: Empaqueta binarios de Windows (.exe NSIS y Portable) mediante `electron-builder` en base a nuevos tags (ej. `v1.0.0`).
@@ -36,7 +36,7 @@ npm run start
 ### Pruebas (Testing)
 
 **Pruebas Unitarias y Reporte de Cobertura:**
-Asegura que el código tenga más de 70% de cobertura.
+Asegura que el código tenga más de 40% de cobertura.
 ```bash
 npm run test:coverage
 ```

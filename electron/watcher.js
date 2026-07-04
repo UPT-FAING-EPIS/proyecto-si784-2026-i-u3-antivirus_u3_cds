@@ -21,7 +21,7 @@ export function startWatcher() {
   ];
 
   watcher = chokidar.watch(watchPaths, {
-    ignored: /(^|[\/\\])\../, // Ignore hidden files
+    ignored: /(^|[/\\\\])\../, // Ignore hidden files
     persistent: true,
     ignoreInitial: true,
     awaitWriteFinish: {

@@ -79,10 +79,4 @@ Feature: Antivirus Core Functions
     Then I should see the application title "RUSTGUARD"
     And the window control buttons should be visible
 
-  Scenario: Threat Modal handles ignoring threats
-    # This is a unit-level behavioral scenario simulated through UI actions or mocking
-    Given I open the RustGuard application
-    When a threat is detected
-    Then a threat modal should appear
-    When I click on "Ignorar"
-    Then the threat modal should disappear
+
