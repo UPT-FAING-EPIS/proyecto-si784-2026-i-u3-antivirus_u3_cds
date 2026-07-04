@@ -189,7 +189,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Run Semgrep
         run: |
-          semgrep scan --config auto --json -o report.json --sarif -o semgrep.sarif . || true
+          semgrep scan --config auto --json -o report.json . || true
+          semgrep scan --config auto --sarif -o semgrep.sarif . || true
       - name: Upload SARIF to GitHub
         uses: github/codeql-action/upload-sarif@v3
         with:
