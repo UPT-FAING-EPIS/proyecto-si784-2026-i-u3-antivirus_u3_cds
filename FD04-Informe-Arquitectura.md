@@ -126,3 +126,11 @@ El bot de Telegram y la Extensión actúan como fachadas. El usuario interactúa
 En el diseño del DevSecOps Action, no se intenta limpiar el archivo malicioso ni se recolectan estadísticas lentas; en cuanto un módulo detecta una firma positiva, se genera el error crítico para abortar la tubería (Pipeline) y proteger el despliegue de inmediato.
 * **Event-Driven (Orientado a Eventos):**
 Toda la suite responde a eventos asíncronos generados por entidades externas, garantizando el ahorro computacional (Bot: Mensajes entrantes / Action: Eventos Push / VSCode: Command Invocation).
+
+---
+
+## Bibliografía
+
+1. Richards, M., & Ford, N. (2020). *Fundamentals of Software Architecture: An Engineering Approach*. O'Reilly Media.
+2. Brown, S. (2021). *The C4 Model for Visualising Software Architecture*. Recuperado de https://c4model.com/
+3. Newman, S. (2015). *Building Microservices: Designing Fine-Grained Systems*. O'Reilly Media.

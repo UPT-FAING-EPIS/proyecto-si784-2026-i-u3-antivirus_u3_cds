@@ -113,3 +113,11 @@ Las ventajas competitivas y capacidades inter-sistemas que diferencian a RustGua
 - **Limites de Rendimiento en Sandbox:** El sistema en VS Code no procesará reglas RegEx de texto en archivos superiores a 10MB para prevenir consumos exorbitantes de memoria (Out Of Memory).
 - **Dependencia de ClamAV:** El bot de Telegram requiere que el sistema servidor tenga el binario y bases de firmas correctamente actualizados (`freshclam`) localmente en sus carpetas `bin` relativas o variables del sistema.
 - **Topes de API:** La manipulación de archivos grandes en Telegram está restringida por las normativas de la propia API de Telegram (generalmente archivos < 20MB para bots comunes).
+
+---
+
+## Bibliografía
+
+1. McGraw, G. (2006). *Software Security: Building Security In*. Addison-Wesley Professional.
+2. OWASP Foundation. (2025). *OWASP Top 10 Proactive Controls*. Recuperado de https://owasp.org/www-project-proactive-controls/
+3. Microsoft. (2025). *Visual Studio Code Extension API*. Recuperado de https://code.visualstudio.com/api

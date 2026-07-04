@@ -109,3 +109,11 @@ El **Informe de Especificación de Requerimientos** consolida las capacidades qu
 ### 3.3 Portabilidad y Compatibilidad
 * **RNF-06:** El sistema de Telegram Bot debe determinar inteligentemente su plataforma (`os.platform() === 'win32'`) para ajustar los comandos de terminal; invocando ejecutables mapeados con sus respectivas rutas relativas en Windows, o demonios nativos de shell en Linux.
 * **RNF-07:** La acción en GitHub debe estar contenedorizada basándose explícitamente en `python:3.10-slim` (o similar de Alpine) para garantizar su inmutabilidad en runners basados en Ubuntu u otros sistemas.
+
+---
+
+## Bibliografía
+
+1. IEEE Computer Society. (1998). *IEEE Recommended Practice for Software Requirements Specifications (IEEE Std 830-1998)*. IEEE.
+2. Telegram FZ-LLC. (2025). *Telegram Bot API*. Recuperado de https://core.telegram.org/bots/api
+3. GitHub. (2025). *Security hardening for GitHub Actions*. Recuperado de https://docs.github.com/en/actions/security-guides

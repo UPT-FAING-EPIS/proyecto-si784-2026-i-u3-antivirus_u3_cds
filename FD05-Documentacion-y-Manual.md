@@ -147,3 +147,11 @@ Al ser una herramienta orientada al desarrollador, su diseño se integra limpiam
 4. Visualiza la notificación emergente inferior derecha:
    - Notificación de Información (Azul): El archivo superó las capas criptográfica y heurística.
    - Notificación de Advertencia (Amarilla/Roja): Positivo en malware o extensión disfrazada (ej. ejecutable PE en archivo de texto). Se habilitará el botón **Ver detalles** para expandir los motivos en la consola de Output de VS Code.
+
+---
+
+## Bibliografía
+
+1. Node.js Foundation. (2025). *Node.js v18.x Documentation*. Recuperado de https://nodejs.org/docs/latest-v18.x/api/
+2. Python Software Foundation. (2025). *Python 3.10 Documentation*. Recuperado de https://docs.python.org/3.10/
+3. GitHub. (2025). *Creating a composite action*. Recuperado de https://docs.github.com/en/actions/creating-actions/creating-a-composite-action

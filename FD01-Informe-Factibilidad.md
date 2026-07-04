@@ -114,3 +114,11 @@ Esta descentralización garantiza una curva de aprendizaje mínima.
 
 ### 4.4 Factibilidad Legal
 El proyecto es compatible con normativas estándar de código abierto. Al implementar la metodología *Zero-Trace* en el bot de Telegram (eliminando permanentemente los archivos del directorio `/tmp` tras su análisis), RustGuard garantiza la privacidad del usuario, alineándose indirectamente con leyes de protección de datos (como GDPR) al no almacenar PII (Personal Identifiable Information) ni archivos sensibles a largo plazo.
+
+---
+
+## Bibliografía
+
+1. Bass, L., Weber, I., & Zhu, L. (2015). *DevOps: A Software Architect's Perspective*. Addison-Wesley Professional.
+2. Kim, G., Debois, P., Willis, J., & Humble, J. (2016). *The DevOps Handbook: How to Create World-Class Agility, Reliability, and Security in Technology Organizations*. IT Revolution Press.
+3. ClamAV. (2025). *ClamAV Official Documentation*. Recuperado de https://docs.clamav.net/

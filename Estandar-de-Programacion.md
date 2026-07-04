@@ -112,3 +112,11 @@ El bot está desarrollado usando ES Modules en Node.js puro (`bot.js`).
 * **Supresión de Excepciones Triviales (Silent Fails):** En el ciclo de lectura de miles de archivos de un proyecto, si un archivo está bloqueado por el sistema o es un binario ininteligible para Regex, el proceso `catch {}` debe simplemente omitir el error para continuar el bucle (no detener todo el análisis por un archivo basura).
 * **Política Zero-Trace:** Toda manipulación de archivos descargados temporalmente (ej. Telegram Bot) debe estar envuelta en un bloque `try...finally` que fuerce indiscutiblemente la ejecución de `fs.unlinkSync()` sobre la ruta de descarga para evitar comprometer el servidor con archivos infectados persistentes.
 * **Hardcoding Restringido:** Está prohibido quemar tokens de APIs en variables globales. Cualquier acceso privilegiado de red debe inyectarse a través del objeto `process.env`.
+
+---
+
+## Bibliografía
+
+1. Van Rossum, G., Warsaw, B., & Coghlan, N. (2001). *PEP 8 – Style Guide for Python Code*. Python Software Foundation. Recuperado de https://peps.python.org/pep-0008/
+2. Microsoft. (2025). *TypeScript Handbook*. Recuperado de https://www.typescriptlang.org/docs/handbook/intro.html
+3. Crockford, D. (2008). *JavaScript: The Good Parts*. O'Reilly Media.

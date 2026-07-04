@@ -117,3 +117,11 @@ Un conjunto de datos tipo `Set<String>` utilizado en el motor para discernir cu�
 **Tipo de Dato:** Set de Cadenas de Texto en minúsculas.
 **Valores Esperados:** `['.exe', '.scr', '.pif', '.com', '.bat', '.cmd', '.vbs', '.vbe', '.ps1', ...]`
 **Lógica de Intersección:** Si se halla un *Magic Number* de ejecutable en un archivo que NO pertenece a este Set de datos, se reporta como "Archivo disfrazado".
+
+---
+
+## Bibliografía
+
+1. Paar, C., & Pelzl, J. (2010). *Understanding Cryptography: A Textbook for Students and Practitioners*. Springer.
+2. EICAR. (2025). *European Institute for Computer Antivirus Research (EICAR) Test File*. Recuperado de https://www.eicar.org/
+3. MDN Web Docs. (2025). *Regular Expressions*. Recuperado de https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions
