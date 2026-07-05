@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
-<coverage lines-valid="303" lines-covered="133" line-rate="0.4389" branches-valid="205" branches-covered="117" branch-rate="0.5707" timestamp="1783208829687" complexity="0" version="0.1">
+<coverage lines-valid="303" lines-covered="133" line-rate="0.4389" branches-valid="205" branches-covered="117" branch-rate="0.5707" timestamp="1783209565879" complexity="0" version="0.1">
   <sources>
     <source>/home/runner/work/proyecto-si784-2026-i-u3-antivirus_u3_cds/proyecto-si784-2026-i-u3-antivirus_u3_cds</source>
   </sources>

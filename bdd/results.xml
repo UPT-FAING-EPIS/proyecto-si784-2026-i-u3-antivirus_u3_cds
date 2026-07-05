@@ -1,6 +1,6 @@
-<testsuites id="" name="" tests="14" failures="6" skipped="0" errors="1" time="158.44908299999997">
-<testsuite name="src/features/antivirus.feature.spec.js" timestamp="2026-07-04T23:47:23.502Z" hostname="chromium" tests="14" failures="6" skipped="0" time="139.751" errors="1">
-<testcase name="Antivirus Core Functions › Dashboard shows initial protected status" classname="src/features/antivirus.feature.spec.js" time="1.623">
+<testsuites id="" name="" tests="14" failures="6" skipped="0" errors="1" time="157.974426">
+<testsuite name="src/features/antivirus.feature.spec.js" timestamp="2026-07-04T23:59:36.280Z" hostname="chromium" tests="14" failures="6" skipped="0" time="139.314" errors="1">
+<testcase name="Antivirus Core Functions › Dashboard shows initial protected status" classname="src/features/antivirus.feature.spec.js" time="1.59">
 <system-out>
 <![CDATA[
 [[ATTACHMENT|../test-results/src-features-antivirus.fea-56535-ws-initial-protected-status-chromium/test-failed-1.png]]
@@ -152,14 +152,14 @@
 ]]>
 </failure>
 </testcase>
-<testcase name="Antivirus Core Functions › Toggling realtime protection" classname="src/features/antivirus.feature.spec.js" time="0.518">
+<testcase name="Antivirus Core Functions › Toggling realtime protection" classname="src/features/antivirus.feature.spec.js" time="0.495">
 <system-out>
 <![CDATA[
 [[ATTACHMENT|../test-results/src-features-antivirus.fea-d2fdf-oggling-realtime-protection-chromium/video.webm]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Antivirus Core Functions › Quick scan execution" classname="src/features/antivirus.feature.spec.js" time="17.616">
+<testcase name="Antivirus Core Functions › Quick scan execution" classname="src/features/antivirus.feature.spec.js" time="17.391">
 <system-out>
 <![CDATA[
 [[ATTACHMENT|../test-results/src-features-antivirus.fea-6ba49-ctions-Quick-scan-execution-chromium/test-failed-1.png]]
@@ -308,7 +308,7 @@
 ]]>
 </failure>
 </testcase>
-<testcase name="Antivirus Core Functions › Full scan execution" classname="src/features/antivirus.feature.spec.js" time="17.525">
+<testcase name="Antivirus Core Functions › Full scan execution" classname="src/features/antivirus.feature.spec.js" time="17.436">
 <system-out>
 <![CDATA[
 [[ATTACHMENT|../test-results/src-features-antivirus.fea-720c3-nctions-Full-scan-execution-chromium/test-failed-1.png]]
@@ -457,7 +457,7 @@
 ]]>
 </failure>
 </testcase>
-<testcase name="Antivirus Core Functions › Quarantine view access" classname="src/features/antivirus.feature.spec.js" time="1.684">
+<testcase name="Antivirus Core Functions › Quarantine view access" classname="src/features/antivirus.feature.spec.js" time="1.72">
 <system-out>
 <![CDATA[
 [[ATTACHMENT|../test-results/src-features-antivirus.fea-b9ed7-ions-Quarantine-view-access-chromium/test-failed-1.png]]
@@ -582,7 +582,7 @@
 ]]>
 </failure>
 </testcase>
-<testcase name="Antivirus Core Functions › History view access" classname="src/features/antivirus.feature.spec.js" time="1.741">
+<testcase name="Antivirus Core Functions › History view access" classname="src/features/antivirus.feature.spec.js" time="1.709">
 <system-out>
 <![CDATA[
 [[ATTACHMENT|../test-results/src-features-antivirus.fea-2aec9-nctions-History-view-access-chromium/test-failed-1.png]]
@@ -707,7 +707,7 @@
 ]]>
 </failure>
 </testcase>
-<testcase name="Antivirus Core Functions › Canceling an active scan" classname="src/features/antivirus.feature.spec.js" time="94.566">
+<testcase name="Antivirus Core Functions › Canceling an active scan" classname="src/features/antivirus.feature.spec.js" time="94.539">
 <system-out>
 <![CDATA[
 [[ATTACHMENT|../test-results/src-features-antivirus.fea-3d64a-ns-Canceling-an-active-scan-chromium/test-failed-1.png]]
@@ -835,7 +835,7 @@
 ]]>
 </error>
 </testcase>
-<testcase name="Antivirus Core Functions › Sidebar navigation highlights active section" classname="src/features/antivirus.feature.spec.js" time="1.811">
+<testcase name="Antivirus Core Functions › Sidebar navigation highlights active section" classname="src/features/antivirus.feature.spec.js" time="1.799">
 <system-out>
 <![CDATA[
 [[ATTACHMENT|../test-results/src-features-antivirus.fea-74d22-n-highlights-active-section-chromium/test-failed-1.png]]
@@ -997,35 +997,35 @@
 ]]>
 </system-out>
 </testcase>
-<testcase name="Antivirus Core Functions › History export functionality exists" classname="src/features/antivirus.feature.spec.js" time="0.455">
+<testcase name="Antivirus Core Functions › History export functionality exists" classname="src/features/antivirus.feature.spec.js" time="0.433">
 <system-out>
 <![CDATA[
 [[ATTACHMENT|../test-results/src-features-antivirus.fea-7336b-export-functionality-exists-chromium/video.webm]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Antivirus Core Functions › View application version" classname="src/features/antivirus.feature.spec.js" time="0.397">
+<testcase name="Antivirus Core Functions › View application version" classname="src/features/antivirus.feature.spec.js" time="0.399">
 <system-out>
 <![CDATA[
 [[ATTACHMENT|../test-results/src-features-antivirus.fea-e280c-ns-View-application-version-chromium/video.webm]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Antivirus Core Functions › Log viewer displays messages" classname="src/features/antivirus.feature.spec.js" time="0.456">
+<testcase name="Antivirus Core Functions › Log viewer displays messages" classname="src/features/antivirus.feature.spec.js" time="0.453">
 <system-out>
 <![CDATA[
 [[ATTACHMENT|../test-results/src-features-antivirus.fea-a5aa1-og-viewer-displays-messages-chromium/video.webm]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Antivirus Core Functions › Dashboard stats are visible" classname="src/features/antivirus.feature.spec.js" time="0.4">
+<testcase name="Antivirus Core Functions › Dashboard stats are visible" classname="src/features/antivirus.feature.spec.js" time="0.413">
 <system-out>
 <![CDATA[
 [[ATTACHMENT|../test-results/src-features-antivirus.fea-17129-Dashboard-stats-are-visible-chromium/video.webm]]
 ]]>
 </system-out>
 </testcase>
-<testcase name="Antivirus Core Functions › Titlebar window controls are present" classname="src/features/antivirus.feature.spec.js" time="0.414">
+<testcase name="Antivirus Core Functions › Titlebar window controls are present" classname="src/features/antivirus.feature.spec.js" time="0.392">
 <system-out>
 <![CDATA[
 [[ATTACHMENT|../test-results/src-features-antivirus.fea-d90a9-window-controls-are-present-chromium/video.webm]]
